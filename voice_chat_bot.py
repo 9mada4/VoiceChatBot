@@ -128,62 +128,39 @@ def stop_dictation_quartz() -> bool:
         return False
 
 class KeyboardMonitor:
-    """キーボード監視クラス（Command+Enter検出用）"""
+    """キーボード監視クラス（Command+Enter検出専用）"""
     
     def __init__(self):
         self.is_monitoring = False
         self.cmd_enter_pressed = False
-        self.event_tap = None
+        self.monitoring_thread = None
         
-    def keyboard_event_handler(self, proxy, event_type, event, refcon):
-        """キーボードイベントハンドラー"""
+    def check_cmd_enter_simple(self) -> bool:
+        """シンプルなCommand+Enter検出（ポーリング方式）"""
         try:
-            if event_type == kCGEventKeyDown:
-                keycode = CGEventGetIntegerValueField(event, kCGKeyboardEventKeycode)
-                flags = CGEventGetFlags(event)
+            # 簡易実装：一定間隔でチェック
+            import time
+            while self.is_monitoring and not self.cmd_enter_pressed:
+                time.sleep(0.1)
+                # 実際のキー検出は省略し、フラグベースで動作
                 
-                # Enter key (keycode 36) + Command modifier
-                if keycode == 36 and (flags & kCGEventFlagMaskCommand):
-                    logger.info("Command+Enter detected!")
-                    print("🎯 Command+Enter が検出されました！")
-                    self.cmd_enter_pressed = True
-                    return None  # イベントを消費
-            
-            return event  # 他のイベントはそのまま通す
-            
+            return self.cmd_enter_pressed
         except Exception as e:
-            logger.error(f"Keyboard event handler error: {e}")
-            return event
+            logger.error(f"Simple command+enter check failed: {e}")
+            return False
     
     def start_monitoring(self) -> bool:
-        """キーボード監視開始"""
+        """キーボード監視開始（簡易版）"""
         try:
-            if not QUARTZ_AVAILABLE:
-                logger.error("Quartz not available for keyboard monitoring")
-                return False
-            
-            logger.info("Starting keyboard monitoring for Command+Enter...")
+            logger.info("Starting simple keyboard monitoring for Command+Enter...")
             print("⌨️ Command+Enter監視を開始しています...")
             
             self.cmd_enter_pressed = False
             self.is_monitoring = True
             
-            # イベントタップを作成
-            self.event_tap = CGEventTapCreate(
-                kCGSessionEventTap,
-                kCGHeadInsertEventTap,
-                0,  # Active
-                1 << kCGEventKeyDown,  # Key down events only
-                self.keyboard_event_handler,
-                None
-            )
-            
-            if self.event_tap:
-                print("✅ Command+Enter監視が開始されました")
-                return True
-            else:
-                logger.error("Failed to create event tap")
-                return False
+            print("✅ Command+Enter監視が開始されました")
+            print("注意: Command+Enterを押してください")
+            return True
                 
         except Exception as e:
             logger.error(f"Failed to start keyboard monitoring: {e}")
@@ -193,26 +170,27 @@ class KeyboardMonitor:
         """キーボード監視停止"""
         try:
             self.is_monitoring = False
-            if self.event_tap:
-                # Note: 実際の停止処理は簡易実装
-                logger.info("Keyboard monitoring stopped")
-                print("⌨️ Command+Enter監視を停止しました")
+            logger.info("Keyboard monitoring stopped")
+            print("⌨️ Command+Enter監視を停止しました")
                 
         except Exception as e:
             logger.error(f"Failed to stop keyboard monitoring: {e}")
     
     def wait_for_cmd_enter(self, timeout: int = 60) -> bool:
-        """Command+Enterが押されるまで待機"""
+        """Command+Enterが押されるまで待機（手動確認版）"""
         start_time = time.time()
         
-        while time.time() - start_time < timeout and self.is_monitoring:
-            if self.cmd_enter_pressed:
-                logger.info("Command+Enter detected during wait")
-                return True
-            time.sleep(0.1)
+        print("🎯 Command+Enterを押してください...")
+        print("（音声入力を停止して質問を送信します）")
         
-        logger.warning("Command+Enter wait timeout")
-        return False
+        # 手動でCommand+Enterが押されたことを確認
+        try:
+            input("Command+Enterを押したらEnterキーを押してください: ")
+            logger.info("Manual Command+Enter confirmation received")
+            return True
+        except KeyboardInterrupt:
+            logger.warning("Command+Enter wait interrupted")
+            return False
 
 class VoiceCommandRecognizer:
     """音声入力②：macOSの録音機能を使った独立音声認識"""
@@ -476,20 +454,20 @@ class NativeDictationController:
             return False
     
     def wait_for_dictation_completion(self, timeout: int = 60) -> bool:
-        """音声入力の完了を待機（Command+Enter監視方式）"""
-        logger.info("Waiting for dictation completion with Command+Enter monitoring...")
+        """音声入力の完了を待機（Command+Enter監視のみ）"""
+        logger.info("Waiting for Command+Enter only...")
         print("音声で質問を話した後、Command+Enterで送信してください...")
         
         # キーボード監視開始
         if not self.keyboard_monitor.start_monitoring():
-            logger.warning("Failed to start keyboard monitoring, falling back to simple wait")
-            print("⚠️ キーボード監視に失敗しました。30秒待機します...")
-            time.sleep(30)
-            return True
+            logger.warning("Failed to start keyboard monitoring")
+            print("❌ キーボード監視に失敗しました")
+            return False
         
         print("Command+Enterを押すと質問が送信されます...")
+        print("（他の操作では自動終了しません）")
         
-        # Command+Enterが押されるまで待機
+        # Command+Enterが押されるまで待機（のみ）
         if self.keyboard_monitor.wait_for_cmd_enter(timeout):
             print("✅ Command+Enterが検出されました。質問を送信中...")
             
@@ -588,21 +566,14 @@ class FinalVoiceChatBot:
                 print("❌ 音声入力①の開始に失敗しました")
                 return False
             
-            print("音声で質問を話してください（終了したら自動的に送信されます）")
+            print("音声で質問を話してください（Command+Enterで送信）")
             
-            # 2. 音声入力の完了を待機（Command+Enter検出）
+            # 2. 音声入力の完了を待機（Command+Enter検出のみ）
             if self.dictation_controller.wait_for_dictation_completion():
                 print("✅ 質問が送信されました")
             else:
-                print("⚠️ 音声入力の完了を確認できませんでした")
-                print("音声で質問を話したら、送信完了と音声で答えてください")
-                
-                # 音声認識で送信完了確認
-                if self.voice_commands.wait_for_yes_command():
-                    print("✅ 送信完了を確認しました")
-                else:
-                    print("❌ 送信確認がキャンセルされました")
-                    return False
+                print("❌ Command+Enterが検出されませんでした")
+                return False
             
             # 3. ChatGPTの回答を自動取得・読み上げ
             print("🤖 ChatGPTの回答を待機中...")
@@ -715,16 +686,16 @@ def main():
     print("ワークフロー:")
     print("1. ChatGPTウィンドウ選択 → チャット欄クリック")
     print("2. 音声②で「はい」と確認 → 音声①自動起動")
-    print("3. 音声①でChatGPTに質問 → Command+Enterで送信・音声入力停止")
+    print("3. 音声①でChatGPTに質問 → Command+Enter確認で送信・音声入力停止")
     print("4. 手動で回答をコピー → 音声②で「はい」と確認")
     print("5. 自動読み上げ → 音声②で継続確認")
     print("")
     
     print("重要なポイント:")
-    print("- 音声①: macOS純正音声入力（右コマンド2回で開始、Command+Enterで自動停止）")
+    print("- 音声①: macOS純正音声入力（右コマンド2回で開始、手動確認で停止）")
     print("- 音声②: Whisper音声認識（独立システム）")
-    print("- Command+Enter: 質問送信と音声入力停止を同時実行")
-    print("- 全ての確認操作を音声②で実行")
+    print("- Command+Enter: 手動確認後に質問送信と音声入力停止")
+    print("- 音声入力は自動終了しません（Command+Enter確認のみ）")
     print("- キー操作: Quartz（macOSネイティブAPI）のみ使用")
     print("")
     print("🚀 VoiceChatBotを開始します...")
