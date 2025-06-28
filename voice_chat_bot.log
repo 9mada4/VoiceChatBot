@@ -103,3 +103,19 @@
 2025-06-28 20:02:54,612 - INFO - Whisper model loaded successfully
 2025-06-28 20:02:54,612 - INFO - VoiceCommandRecognizer initialized (macOS recording + Whisper)
 2025-06-28 20:03:04,878 - INFO - Processing audio with duration 00:10.000
+2025-06-28 20:19:23,127 - INFO - Whisper model loaded successfully
+2025-06-28 20:19:23,128 - INFO - VoiceCommandRecognizer initialized (macOS recording + Whisper)
+2025-06-28 20:19:23,128 - INFO - FinalVoiceChatBot initialized
+2025-06-28 20:19:23,128 - INFO - Speaking: ChatGPTアプリのウィンドウを選択し、チャット入力欄をクリックしてください。選択したら「はい」と...
+2025-06-28 20:19:35,587 - INFO - Speech completed
+2025-06-28 20:19:45,843 - INFO - Processing audio with duration 00:10.000
+2025-06-28 20:19:46,958 - INFO - Dictation already active
+2025-06-28 20:19:47,024 - INFO - Waiting for dictation completion...
+2025-06-28 20:20:44,589 - INFO - Whisper model loaded successfully
+2025-06-28 20:20:44,590 - INFO - VoiceCommandRecognizer initialized (macOS recording + Whisper)
+2025-06-28 20:20:44,590 - INFO - FinalVoiceChatBot initialized
+2025-06-28 20:20:44,590 - INFO - Speaking: ChatGPTアプリのウィンドウを選択し、チャット入力欄をクリックしてください。選択したら「はい」と...
+2025-06-28 20:20:54,248 - INFO - Speech completed
+2025-06-28 20:21:04,513 - INFO - Processing audio with duration 00:10.000
+2025-06-28 20:21:04,872 - INFO - Dictation already active
+2025-06-28 20:21:04,937 - INFO - Waiting for dictation completion...
