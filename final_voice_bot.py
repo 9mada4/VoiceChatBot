@@ -60,7 +60,7 @@ class VoiceCommandRecognizer:
         
         logger.info("VoiceCommandRecognizer initialized (macOS recording + Whisper)")
     
-    def record_audio_macos(self, duration: int = 3) -> str:
+    def record_audio_macos(self, duration: int = 5) -> str:
         """macOSのrecコマンドで音声録音"""
         try:
             # 一時ファイル作成
@@ -69,6 +69,8 @@ class VoiceCommandRecognizer:
             
             print(f"🎤 音声録音中... ({duration}秒)")
             print("「はい」または「いいえ」と話してください")
+            print("ゆっくりとはっきり話してください")
+            print("録音開始！ 📣")
             
             # macOSのrecコマンドで録音
             cmd = [
@@ -79,6 +81,7 @@ class VoiceCommandRecognizer:
             
             try:
                 subprocess.run(cmd, check=True, capture_output=True)
+                print("✅ 録音完了！")
                 return temp_file.name
             except subprocess.CalledProcessError:
                 # recコマンドが利用できない場合
@@ -90,11 +93,29 @@ class VoiceCommandRecognizer:
             return None
     
     def _keyboard_fallback(self) -> str:
-        """音声認識失敗時のキーボード入力フォールバック"""
+        """音声認識失敗時の再試行処理"""
         print("音声認識が利用できません。")
-        print("「はい」なら 'y'、「いいえ」なら 'n' を入力してEnterキーを押してください:")
-        user_input = input(">> ").strip().lower()
-        return "はい" if user_input in ['y', 'yes', 'はい'] else "いいえ"
+        print("もう一度音声で「はい」または「いいえ」と話してください...")
+        
+        # 音声認識を再試行（簡易版）
+        for attempt in range(3):
+            print(f"再試行 {attempt + 1}/3:")
+            time.sleep(1)
+            audio_file = self.record_audio_macos(duration=4)  # 再試行は少し短く
+            if audio_file:
+                text = self.transcribe_audio(audio_file)
+                if text:
+                    text_lower = text.lower()
+                    yes_commands = ['はい', 'hai', 'yes', 'うん', 'そうです', 'オッケー', 'ok', 'そう']
+                    if any(yes_word in text_lower for yes_word in yes_commands):
+                        return "はい"
+                    # 明確に「いいえ」系の場合
+                    no_commands = ['いいえ', 'いえ', 'no', 'だめ', 'やめ', 'キャンセル']
+                    if any(no_word in text_lower for no_word in no_commands):
+                        return "いいえ"
+        
+        print("音声認識に3回失敗しました。デフォルトで「いいえ」として処理します。")
+        return "いいえ"
     
     def transcribe_audio(self, audio_file: str) -> Optional[str]:
         """音声ファイルをテキストに変換"""
@@ -115,18 +136,18 @@ class VoiceCommandRecognizer:
             return None
     
     def wait_for_yes_command(self, timeout: int = 60) -> bool:
-        """「はい」コマンドを待機（独立音声認識）"""
+        """「はい」コマンドを待機（完全音声認識のみ）"""
         try:
             if not VOICE_RECOGNITION_AVAILABLE:
-                # 音声認識が利用できない場合はキーボード入力
+                # 音声認識が利用できない場合は音声で再試行
                 result_text = self._keyboard_fallback()
                 return result_text == "はい"
             
             # 音声録音
-            audio_file = self.record_audio_macos(duration=3)
+            audio_file = self.record_audio_macos(duration=5)
             
             if not audio_file:
-                # 録音失敗時はキーボード入力にフォールバック
+                # 録音失敗時は音声で再試行
                 result_text = self._keyboard_fallback()
                 return result_text == "はい"
             
@@ -191,13 +212,13 @@ class ChatGPTResponseExtractor:
             return None
     
     def wait_for_response_ready(self) -> bool:
-        """回答準備完了の確認"""
+        """回答準備完了の確認（完全音声認識のみ）"""
         print("\nChatGPTの回答が完了したら:")
         print("1. 回答全体を選択（Cmd+A またはマウスで選択）")
         print("2. コピー（Cmd+C）")
-        print("3. 準備完了の確認")
+        print("3. 「はい」と音声で答えてください")
         
-        # キーボード入力で確認
+        # 音声認識で確認
         recognizer = VoiceCommandRecognizer()
         return recognizer.wait_for_yes_command()
 
@@ -378,8 +399,14 @@ class FinalVoiceChatBot:
                 print("✅ 質問が送信されました")
             else:
                 print("⚠️ 音声入力の完了を確認できませんでした")
-                print("手動でEnterキーを押して送信してください")
-                input("送信したらEnterキーを押してください...")
+                print("音声で質問を話したら、送信完了と音声で答えてください")
+                
+                # 音声認識で送信完了確認
+                if self.voice_commands.wait_for_yes_command():
+                    print("✅ 送信完了を確認しました")
+                else:
+                    print("❌ 送信確認がキャンセルされました")
+                    return False
             
             # 3. ChatGPTの回答を待機・取得
             print("🤖 ChatGPTの回答を待機中...")
@@ -485,6 +512,7 @@ def main():
     print("- 音声入力①: macOS純正（ChatGPT入力用）")
     print("- 音声入力②: 独立音声認識システム（制御用）") 
     print("- 自動読み上げ: ChatGPT回答の音声出力")
+    print("- 完全音声制御: キーボード入力不要")
     print("")
     
     print("ワークフロー:")
@@ -499,13 +527,21 @@ def main():
     print("- 音声①: macOS純正音声入力（コマンド2回）")
     print("- 音声②: Whisper音声認識（独立システム）")
     print("- 2つの音声システムが独立して動作")
+    print("- 全ての確認操作を音声②で実行")
     print("")
     
-    input("準備完了後、Enterキーを押してください...")
+    # 自動開始（音声②で開始確認）
+    print("🎤 開始確認: 準備ができたら「はい」と話してください")
     
     try:
-        bot = FinalVoiceChatBot()
-        bot.main_loop()
+        # 開始確認も音声で行う
+        voice_commands = VoiceCommandRecognizer()
+        if voice_commands.wait_for_yes_command():
+            print("✅ 開始確認完了")
+            bot = FinalVoiceChatBot()
+            bot.main_loop()
+        else:
+            print("開始がキャンセルされました")
     except Exception as e:
         logger.error(f"Failed to start FinalVoiceChatBot: {e}")
         print(f"エラーが発生しました: {e}")

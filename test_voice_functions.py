@@ -43,7 +43,8 @@ def test_voice_input_control():
     print("- または fn キー2回押し")
     print("- または設定されたショートカット")
     
-    input("音声入力を起動したらEnterキーを押してください...")
+    print("音声入力を起動したら、30秒待機します...")
+    time.sleep(30)  # input() の代わりに固定時間待機
     
     # 起動確認
     active, process = check_voice_input_status()

@@ -54,3 +54,12 @@
 2025-06-28 16:12:03,054 - INFO - Dictation already active
 2025-06-28 16:12:03,109 - INFO - Waiting for dictation completion...
 2025-06-28 16:13:03,620 - WARNING - Dictation timeout
+2025-06-28 16:13:27,600 - INFO - VoiceCommandRecognizer initialized (macOS recording + Whisper)
+2025-06-28 16:18:45,457 - INFO - VoiceCommandRecognizer initialized (macOS recording + Whisper)
+2025-06-28 16:18:46,483 - ERROR - macOS recording failed: [Errno 2] No such file or directory: 'rec'
+2025-06-28 16:18:47,498 - ERROR - macOS recording failed: [Errno 2] No such file or directory: 'rec'
+2025-06-28 16:18:48,512 - ERROR - macOS recording failed: [Errno 2] No such file or directory: 'rec'
+2025-06-28 16:18:51,939 - INFO - VoiceCommandRecognizer initialized (macOS recording + Whisper)
+2025-06-28 16:18:52,953 - ERROR - macOS recording failed: [Errno 2] No such file or directory: 'rec'
+2025-06-28 16:18:53,968 - ERROR - macOS recording failed: [Errno 2] No such file or directory: 'rec'
+2025-06-28 16:18:54,976 - ERROR - macOS recording failed: [Errno 2] No such file or directory: 'rec'

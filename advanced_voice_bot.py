@@ -51,14 +51,15 @@ class VoiceCommandRecognizer:
         
         logger.info("VoiceCommandRecognizer initialized")
     
-    def listen_for_command(self, timeout: int = 10) -> Optional[str]:
+    def listen_for_command(self, timeout: int = 15) -> Optional[str]:
         """音声コマンドを聞き取り"""
         try:
             logger.info("Listening for voice command...")
+            print("🎤 音声を聞き取り中... ゆっくりとはっきり話してください")
             
             with self.microphone as source:
-                # タイムアウト付きで音声を聞き取り
-                audio = self.recognizer.listen(source, timeout=timeout, phrase_time_limit=3)
+                # タイムアウト付きで音声を聞き取り（録音時間を延長）
+                audio = self.recognizer.listen(source, timeout=timeout, phrase_time_limit=5)
             
             try:
                 # Google Speech Recognitionを使用（日本語対応）
@@ -80,13 +81,13 @@ class VoiceCommandRecognizer:
             logger.error(f"Error in voice command recognition: {e}")
             return None
     
-    def wait_for_yes_command(self, timeout: int = 30) -> bool:
+    def wait_for_yes_command(self, timeout: int = 45) -> bool:
         """「はい」コマンドを待機"""
         logger.info("Waiting for 'はい' command...")
         
         start_time = time.time()
         while time.time() - start_time < timeout:
-            command = self.listen_for_command(timeout=5)
+            command = self.listen_for_command(timeout=8)
             if command:
                 # 「はい」の様々なバリエーションに対応
                 yes_commands = ['はい', 'hai', 'yes', 'うん', 'そうです', 'オッケー', 'ok']
