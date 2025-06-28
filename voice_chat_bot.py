@@ -106,11 +106,15 @@ class VoiceCommandRecognizer:
                 text = self.transcribe_audio(audio_file)
                 if text:
                     text_lower = text.lower()
-                    yes_commands = ['はい', 'hai', 'yes', 'うん', 'そうです', 'オッケー', 'ok', 'そう']
+                    yes_commands = [
+                        'はい', 'hai', 'yes', 'うん', 'そうです', 'オッケー', 'ok', 'そう',
+                        'お願い', 'します', 'いたします', 'ください', '続行', '開始', 
+                        'よろしく', 'いいよ', 'いいです', 'ありがとう', 'スタート'
+                    ]
                     if any(yes_word in text_lower for yes_word in yes_commands):
                         return "はい"
                     # 明確に「いいえ」系の場合
-                    no_commands = ['いいえ', 'いえ', 'no', 'だめ', 'やめ', 'キャンセル']
+                    no_commands = ['いいえ', 'いえ', 'no', 'だめ', 'やめ', 'キャンセル', 'ストップ', '中止']
                     if any(no_word in text_lower for no_word in no_commands):
                         return "いいえ"
         
@@ -156,7 +160,11 @@ class VoiceCommandRecognizer:
             
             if text:
                 text_lower = text.lower()
-                yes_commands = ['はい', 'hai', 'yes', 'うん', 'そうです', 'オッケー', 'ok', 'そう']
+                yes_commands = [
+                    'はい', 'hai', 'yes', 'うん', 'そうです', 'オッケー', 'ok', 'そう',
+                    'お願い', 'します', 'いたします', 'ください', '続行', '開始', 
+                    'よろしく', 'いいよ', 'いいです', 'ありがとう', 'スタート'
+                ]
                 
                 result = any(yes_word in text_lower for yes_word in yes_commands)
                 print(f"音声認識結果: '{text}' → 判定: {'はい' if result else 'いいえ'}")
