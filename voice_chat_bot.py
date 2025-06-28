@@ -248,18 +248,30 @@ class VoiceBot:
 
             print("📸 スクリーンショットショートカット実行中...")
 
-            # 4キー同時押し
-            keys = [CMD_KEY, SHIFT_KEY, CTRL_KEY, KEY_5]
-            for key in keys:
+            # 最初の3キー（Cmd+Shift+Ctrl）を同時押し
+            modifier_keys = [CMD_KEY, SHIFT_KEY, CTRL_KEY]
+            for key in modifier_keys:
                 event = CGEventCreateKeyboardEvent(None, key, True)
                 CGEventPost(kCGHIDEventTap, event)
 
+            time.sleep(0.1)  # 修飾キーを安定させる
+
+            # 5キーを少し遅らせて押す
+            event = CGEventCreateKeyboardEvent(None, KEY_5, True)
+            CGEventPost(kCGHIDEventTap, event)
+
             time.sleep(0.05)
 
-            # 4キー順に離す（同時離しでも問題ないが順に離す）
-            for key in reversed(keys):
+            # キーを離す（5 -> Ctrl -> Shift -> Cmd の順）
+            event = CGEventCreateKeyboardEvent(None, KEY_5, False)
+            CGEventPost(kCGHIDEventTap, event)
+            
+            time.sleep(0.02)
+            
+            for key in reversed(modifier_keys):
                 event = CGEventCreateKeyboardEvent(None, key, False)
                 CGEventPost(kCGHIDEventTap, event)
+                time.sleep(0.01)
 
             print("✅ スクリーンショットショートカット実行完了")
             return True
