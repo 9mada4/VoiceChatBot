@@ -122,8 +122,9 @@ class VoiceBot:
         
         # 終了コマンドの検出（ひらがな・漢字・カタカナ対応）
         end_commands = [
-            '終了', 'しゅうりょう', 'シュウリョウ', 'SHUURYOU', 'しゅーりょー', 'シューリョー',
-            'おわり', 'オワリ', '終わり', 'end', 'finish', 'stop', 'やめ', 'ヤメ',
+            '終わり', 'おわり', 'オワリ', 'OWARI', 'おわりー', 'オワリー',
+            'しゅうりょう', 'シュウリョウ', 'SHUURYOU', 'しゅーりょー', 'シューリョー',
+            'end', 'finish', 'stop', 'やめ', 'ヤメ',
             'キャンセル', 'cancel', 'ストップ', '中止', 'ちゅうし', 'チュウシ'
         ]
         
@@ -131,11 +132,11 @@ class VoiceBot:
         
         # 終了判定を優先
         if any(end_word in text_lower for end_word in end_commands):
-            print(f"判定結果: 終了")
+            print(f"判定結果: 終わり")
             return False
         
         result = any(yes_word in text_lower for yes_word in yes_commands)
-        print(f"判定結果: {'はい' if result else '終了'}")
+        print(f"判定結果: {'はい' if result else '終わり'}")
         
         return result
     
@@ -213,15 +214,15 @@ class VoiceBot:
         while not self.stop_monitoring:
             try:
                 # 音声録音（短い間隔で監視）
-                audio_file = self.record_audio_macos(duration=3)
+                audio_file = self.record_audio_macos(duration=5)
                 if audio_file:
                     text = self.transcribe_audio(audio_file)
                     if text:
                         print(f"🎧 監視中の音声: '{text}'")
                         
                         # 「音声入力終了」を検知
-                        if '音声入力終了' in text or '終了' in text:
-                            print("🎯 音声入力終了を検知！")
+                        if '音声入力終わり' in text or '終わり' in text:
+                            print("🎯 音声入力終わりを検知！")
                             self.stop_monitoring = True
                             self.stop_dictation()
                             break
@@ -235,7 +236,7 @@ class VoiceBot:
         print("🛑 バックグラウンド音声監視を終了")
     
     def take_screenshot_shortcut(self) -> bool:
-        """Cmd+Shift+Ctrl+5でスクリーンショット撮影（同時押し形式）"""
+        """Cmd+Shift+Ctrl+5でスクリーンショット撮影（修飾フラグ使用版）"""
         if not QUARTZ_AVAILABLE:
             print("💡 手動でCmd+Shift+Ctrl+5を押してください")
             return False
@@ -246,32 +247,37 @@ class VoiceBot:
             CTRL_KEY = 59     # Control
             KEY_5 = 23        # 5
 
+            # 修飾フラグを定義
+            FLAGS = (
+                Quartz.kCGEventFlagMaskCommand |
+                Quartz.kCGEventFlagMaskShift   |
+                Quartz.kCGEventFlagMaskControl
+            )
+
             print("📸 スクリーンショットショートカット実行中...")
 
-            # 最初の3キー（Cmd+Shift+Ctrl）を同時押し
-            modifier_keys = [CMD_KEY, SHIFT_KEY, CTRL_KEY]
+            # 1) 修飾キーを押しっぱなし
+            modifier_keys = [CTRL_KEY, SHIFT_KEY, CMD_KEY]
             for key in modifier_keys:
                 event = CGEventCreateKeyboardEvent(None, key, True)
                 CGEventPost(kCGHIDEventTap, event)
 
-            time.sleep(0.1)  # 修飾キーを安定させる
+            time.sleep(0.05)  # 僅かに待機
 
-            # 5キーを少し遅らせて押す
+            # 2) 5キーDown（修飾フラグ付き）
             event = CGEventCreateKeyboardEvent(None, KEY_5, True)
+            Quartz.CGEventSetFlags(event, FLAGS)
             CGEventPost(kCGHIDEventTap, event)
 
-            time.sleep(0.05)
-
-            # キーを離す（5 -> Ctrl -> Shift -> Cmd の順）
+            # 3) 5キーUp（修飾フラグ付き）
             event = CGEventCreateKeyboardEvent(None, KEY_5, False)
+            Quartz.CGEventSetFlags(event, FLAGS)
             CGEventPost(kCGHIDEventTap, event)
-            
-            time.sleep(0.02)
-            
+
+            # 4) 修飾キーを離す
             for key in reversed(modifier_keys):
                 event = CGEventCreateKeyboardEvent(None, key, False)
                 CGEventPost(kCGHIDEventTap, event)
-                time.sleep(0.01)
 
             print("✅ スクリーンショットショートカット実行完了")
             return True
@@ -348,100 +354,121 @@ class VoiceBot:
             return f"スクリーンショット {os.path.basename(screenshot_path)} を確認しました。"
     
     def wait_for_enter_or_escape(self) -> str:
-        """スクリーンショット画面でEnterまたはEscapeキーの実際の入力を待機"""
+        """スクリーンショット画面で音声による「はい」「いいえ」を監視"""
         print("⌨️  スクリーンショット画面が表示されています")
-        print("   Enter: スクリーンショット撮影を実行")
-        print("   Escape: スクリーンショット画面を閉じる")
+        print("   「はい」: スクリーンショット撮影を実行")
+        print("   「いいえ」または「終わり」: スクリーンショット画面を閉じる")
         
-        self.speak_text("スクリーンショット画面が表示されています。エンターキーでスクリーンショット撮影、エスケープキーで画面を閉じます。")
+        self.speak_text("スクリーンショット画面が表示されています。はいと言うとスクリーンショット撮影、いいえと言うと画面を閉じます。")
         
-        # 実際のキー入力を音声で確認
+        # 音声入力を無限に待機
         while True:
             try:
-                print("🎤 キーを押したら「押しました」と言ってください...")
-                audio_file = self.record_audio_macos(duration=4)
-                if audio_file:
-                    text = self.transcribe_audio(audio_file)
-                    if text:
-                        print(f"音声認識結果: '{text}'")
+                print("🎤 「はい」または「いいえ」と話してください...")
+                
+                # 直接音声録音
+                temp_file = tempfile.NamedTemporaryFile(suffix=".wav", delete=False)
+                temp_file.close()
+                
+                cmd = ['rec', temp_file.name, 'trim', '0', '5']
+                try:
+                    subprocess.run(cmd, check=True, capture_output=True)
+                    
+                    if self.whisper_model:
+                        segments, _ = self.whisper_model.transcribe(temp_file.name, language="ja")
+                        text = " ".join([segment.text for segment in segments])
+                        os.unlink(temp_file.name)
                         
-                        # キー押下確認
-                        pressed_words = ['押しました', '押した', 'おした', 'pressed', 'done', 'はい']
-                        if any(word in text.lower() for word in pressed_words):
-                            print("✅ キー入力を確認しました")
+                        if text:
+                            print(f"音声認識結果: '{text}'")
                             
-                            # どのキーを押したか確認
-                            print("🎤 エンターまたはエスケープ、どちらを押しましたか？")
-                            self.speak_text("エンターまたはエスケープ、どちらを押しましたか？")
+                            # 「はい」系の判定
+                            yes_commands = ['はい', 'hai', 'yes', 'うん', 'そうです', 'オッケー', 'ok']
+                            # 「いいえ」系の判定
+                            no_commands = ['いいえ', 'no', 'だめ', 'ダメ', 'やめ', 'ヤメ']
+                            # 終わり系の判定
+                            end_commands = ['終わり', 'おわり', 'オワリ', 'キャンセル', 'cancel']
                             
-                            audio_file2 = self.record_audio_macos(duration=3)
-                            if audio_file2:
-                                text2 = self.transcribe_audio(audio_file2)
-                                if text2:
-                                    print(f"キー確認結果: '{text2}'")
-                                    
-                                    # エンター関連
-                                    enter_words = ['エンター', 'enter', 'スクリーンショット', '撮影']
-                                    # エスケープ関連  
-                                    escape_words = ['エスケープ', 'escape', 'キャンセル', '閉じ']
-                                    
-                                    text2_lower = text2.lower()
-                                    
-                                    if any(word in text2_lower for word in enter_words):
-                                        return "enter"
-                                    elif any(word in text2_lower for word in escape_words):
-                                        return "escape"
+                            text_lower = text.lower()
                             
-                            # デフォルトはenter
-                            return "enter"
-                        
-                        # 終了コマンド
-                        end_words = ['終了', 'やめ', 'キャンセル', 'end']
-                        if any(word in text.lower() for word in end_words):
-                            print("🛑 待機を終了します")
-                            return "escape"
+                            if any(yes_word in text_lower for yes_word in yes_commands):
+                                print("✅ 「はい」を検知 - スクリーンショット撮影")
+                                return "enter"
+                            elif any(no_word in text_lower for no_word in no_commands) or any(end_word in text_lower for end_word in end_commands):
+                                print("❌ 「いいえ」または「終わり」を検知 - 画面を閉じる")
+                                return "escape"
+                
+                except:
+                    # 録音失敗時はファイルを削除
+                    try:
+                        os.unlink(temp_file.name)
+                    except:
+                        pass
                 
                 time.sleep(1)
                 
+            except KeyboardInterrupt:
+                print("\n🛑 キーボード割り込みで終了")
+                return "escape"
             except Exception as e:
-                logger.error(f"Failed to wait for key input: {e}")
+                logger.error(f"Failed to wait for voice input: {e}")
                 return "enter"
     
     def monitor_keyboard_shortcut(self):
-        """Cmd+Shift+Ctrl+5の入力を監視"""
-        print("⌨️  キーボード監視モード開始")
-        print("   Cmd+Shift+Ctrl+5を押すとスクリーンショットを撮影します")
+        """音声監視モード（簡略化版）"""
+        print("⌨️  音声監視モード開始")
         
-        # 簡易的な監視（実際のキーボードフックは複雑なので音声で代替）
-        self.speak_text("キーボード監視モードです。準備ができたら「準備完了」と言ってください。")
+        self.speak_text("音声監視モードです。準備ができたら「はい」と言ってください。")
+        
+        print("� 準備ができたら「はい」と言ってください...")
         
         while True:
             try:
-                audio_file = self.record_audio_macos(duration=4)
-                if audio_file:
-                    text = self.transcribe_audio(audio_file)
-                    if text:
-                        print(f"監視中の音声: '{text}'")
+                # 直接音声録音
+                temp_file = tempfile.NamedTemporaryFile(suffix=".wav", delete=False)
+                temp_file.close()
+                
+                cmd = ['rec', temp_file.name, 'trim', '0', '5']
+                try:
+                    subprocess.run(cmd, check=True, capture_output=True)
+                    
+                    if self.whisper_model:
+                        segments, _ = self.whisper_model.transcribe(temp_file.name, language="ja")
+                        text = " ".join([segment.text for segment in segments])
+                        os.unlink(temp_file.name)
                         
-                        ready_words = ['準備完了', '準備', 'ready', 'はい', 'オッケー']
-                        if any(word in text.lower() for word in ready_words):
-                            print("🎯 準備完了を検知！")
-                            break
-                        
-                        # 終了コマンド
-                        end_words = ['終了', 'やめ', 'キャンセル', 'end']
-                        if any(word in text.lower() for word in end_words):
-                            print("🛑 監視を終了します")
-                            return False
+                        if text:
+                            print(f"監視中の音声: '{text}'")
+                            
+                            ready_words = ['はい', 'ready', 'オッケー', 'ok']
+                            if any(word in text.lower() for word in ready_words):
+                                print("🎯 「はい」を検知！")
+                                break
+                            
+                            # 終わりコマンド
+                            end_words = ['終わり', 'やめ', 'キャンセル', 'end']
+                            if any(word in text.lower() for word in end_words):
+                                print("� 監視を終了します")
+                                return False
+                
+                except:
+                    # 録音失敗時はファイルを削除
+                    try:
+                        os.unlink(temp_file.name)
+                    except:
+                        pass
                 
                 time.sleep(1)
                 
+            except KeyboardInterrupt:
+                print("\n🛑 キーボード割り込みで終了")
+                return False
             except Exception as e:
-                logger.error(f"Keyboard monitoring error: {e}")
+                logger.error(f"Voice monitoring error: {e}")
                 break
         
         # Enterキーを押す
-        print("📸 Enterキーを押してスクリーンショット撮影")
+        print("📸 スクリーンショット撮影を実行")
         self.press_enter()
         return True
     
@@ -491,9 +518,9 @@ class VoiceBot:
             user_choice = self.wait_for_enter_or_escape()
             
             if user_choice == "enter":
-                print("\n【選択1】Enter押下 -> スクリーンショット撮影済み")
+                print("\n【選択1】「はい」選択 -> スクリーンショット撮影済み")
                 
-                # ユーザーが既にEnterを押してスクリーンショットが撮影されている
+                # ユーザーが「はい」と言ってスクリーンショットが撮影されている
                 time.sleep(2)  # スクリーンショット保存待機
                 
                 # 最新のスクリーンショットを取得
@@ -508,12 +535,12 @@ class VoiceBot:
                     return False
                 
             elif user_choice == "escape":
-                print("\n【選択2】Escape押下 -> スクリーンショット画面終了")
+                print("\n【選択2】「いいえ」選択 -> スクリーンショット画面終了")
                 
-                # ユーザーが既にEscapeを押してスクリーンショット画面を閉じている
+                # ユーザーが「いいえ」と言ってスクリーンショット画面を閉じている
                 time.sleep(1)
                 
-                # キーボード監視開始
+                # 音声監視開始
                 print("📸 再度スクリーンショットツールを起動します...")
                 if self.take_screenshot_shortcut():
                     time.sleep(2)
@@ -532,7 +559,7 @@ class VoiceBot:
                             print("❌ スクリーンショットが見つかりませんでした")
                             return False
                     else:
-                        print("❌ キーボード監視がキャンセルされました")
+                        print("❌ 音声監視がキャンセルされました")
                         return False
                 else:
                     print("❌ スクリーンショット再起動に失敗")
@@ -545,32 +572,20 @@ class VoiceBot:
             return False
 
     def run_requirements_1_to_3(self):
-        """メインワークフロー（簡略化版）"""
+        """メインワークフロー（簡略化版）- 初期確認なし"""
         print("\n" + "="*50)
         print("VoiceChatBot - シンプル音声制御")
         print("="*50)
         
-        # 要件1: 「準備はできましたか？」読み上げ + 音声入力②（4秒）
-        print("\n【ステップ1】準備確認")
-        self.speak_text("準備はできましたか？")
+        # 直接音声入力を開始
+        print("\n【ステップ1】音声入力開始")
+        self.speak_text("お話しください")
         
-        response = self.get_voice_response(duration=4)  # 4秒に変更
-        
-        if response:
-            # 要件2: 「はい」→「お話しください」読み上げ + 音声入力①起動
-            print("\n【ステップ2】音声入力開始")
-            self.speak_text("お話しください")
-            
-            if self.start_dictation():
-                print("✅ 音声入力①が正常に開始されました")
-                return self.run_requirements_4_to_7()
-            else:
-                print("❌ 音声入力①の開始に失敗しました")
-                return False
+        if self.start_dictation():
+            print("✅ 音声入力①が正常に開始されました")
+            return self.run_requirements_4_to_7()
         else:
-            # 要件3: 「終了」→終了（常に終了）
-            print("\n【ステップ3】終了")
-            print("👋 プログラムを終了します")
+            print("❌ 音声入力①の開始に失敗しました")
             return False
     
     def run_requirements_4_to_7(self):
@@ -585,7 +600,7 @@ class VoiceBot:
             self.background_thread.start()
             
             # 音声入力終了の検知を待機
-            print("🎤 音声で話してください。「音声入力終了」と言うと音声入力が停止されます")
+            print("🎤 音声で話してください。「音声入力終わり」と言うと音声入力が停止されます")
             
             # バックグラウンドスレッドの終了を待機
             self.background_thread.join(timeout=60)  # 最大60秒待機
@@ -613,12 +628,12 @@ def main():
     """メイン関数"""
     print("VoiceChatBot for macOS")
     print("=====================")
-    print("超シンプルワークフロー:")
-    print("1. 準備確認")
-    print("2. 音声入力開始")
-    print("3. 音声入力終了の検知")
-    print("4. 自動送信")
-    print("※「終了」は常に終了になりました（ひらがな・漢字・カタカナ対応）")
+    print("シンプル音声制御ワークフロー:")
+    print("1. 音声入力開始（確認なし）")
+    print("2. 音声入力終了の検知")
+    print("3. 自動送信")
+    print("4. スクリーンショット（音声制御）")
+    print("※全て音声で操作します（ひらがな・漢字・カタカナ対応）")
     print("")
     
     bot = VoiceBot()
