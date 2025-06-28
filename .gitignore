@@ -18,6 +18,25 @@ var/
 wheels/
 *.egg-info/
 .installed.cfg
+
+# セキュリティ関連ファイル
+*.wav
+*.mp3
+*.m4a
+*.log
+voice_chat_bot.log
+temp_*
+*.tmp
+
+# 個人情報
+.env
+config.json
+settings.json
+
+# macOS固有
+.DS_Store
+.AppleDouble
+.LSOverride
 *.egg
 MANIFEST
 
