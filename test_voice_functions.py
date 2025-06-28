@@ -200,17 +200,17 @@ def test_pyautogui():
         return False
 
 def test_right_cmd_key():
-    """右コマンドキー2回押しテスト（AppleScript使用、JIS/US配列対応）"""
+    """右コマンドキー2回押しテスト（AppleScript使用、key code 54）"""
     print_header("右コマンドキー2回押しテスト")
     
-    print_test("AppleScript経由の右コマンドキー動作テスト（JIS/US配列対応）")
+    print_test("AppleScript経由の右コマンドキー動作テスト（key code 54）")
     try:
         print("⚠️  3秒後に右コマンドキー2回押しを実行します")
         print("音声入力が起動するか確認してください...")
         time.sleep(3)
         
-        # まずJIS配列（key code 54）で試行
-        applescript_jis = '''
+        # 右コマンドキー（key code 54）で試行
+        applescript = '''
         tell application "System Events"
             key code 54
             delay 0.3
@@ -218,31 +218,14 @@ def test_right_cmd_key():
         end tell
         '''
         
-        result = subprocess.run(['osascript', '-e', applescript_jis], 
+        result = subprocess.run(['osascript', '-e', applescript], 
                               capture_output=True, text=True, timeout=10)
         
         if result.returncode == 0:
-            print_result(True, "AppleScript経由の右コマンドキー2回押し実行完了（JIS配列）")
+            print_result(True, "AppleScript経由の右コマンドキー2回押し実行完了（key code 54）")
         else:
-            print(f"JIS配列（key code 54）で失敗、US配列を試行: {result.stderr}")
-            
-            # US配列（key code 55）で試行
-            applescript_us = '''
-            tell application "System Events"
-                key code 55
-                delay 0.3
-                key code 55
-            end tell
-            '''
-            
-            result = subprocess.run(['osascript', '-e', applescript_us], 
-                                  capture_output=True, text=True, timeout=10)
-            
-            if result.returncode == 0:
-                print_result(True, "AppleScript経由の右コマンドキー2回押し実行完了（US配列）")
-            else:
-                print_result(False, f"US配列でも実行エラー: {result.stderr}")
-                return False
+            print_result(False, f"右コマンド実行エラー: {result.stderr}")
+            return False
         
         # プロセス確認
         print_test("音声入力プロセス確認")

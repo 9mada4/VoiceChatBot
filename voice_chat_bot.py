@@ -286,20 +286,20 @@ class NativeDictationController:
             logger.info("Starting native dictation...")
             print("🎤 macOS音声入力を開始しています...")
             
-            # 方法1: 右コマンドキー2回押し（AppleScript使用）
-            print("方法1: 右コマンドキー2回押しを試行中（US配列）...")
+            # 方法1: 右コマンドキー2回押し（AppleScript使用、key code 54）
+            print("方法1: 右コマンドキー2回押しを試行中（key code 54）...")
             try:
                 applescript = '''
                 tell application "System Events"
-                    key code 55
+                    key code 54
                     delay 0.3
-                    key code 55
+                    key code 54
                 end tell
                 '''
                 result = subprocess.run(['osascript', '-e', applescript], 
                                      capture_output=True, text=True, timeout=10)
                 if result.returncode == 0:
-                    print("✅ AppleScript経由でキー送信完了（US配列）")
+                    print("✅ AppleScript経由でキー送信完了（右コマンド key code 54）")
                 else:
                     print(f"⚠️ AppleScript実行警告: {result.stderr}")
             except Exception as e:
@@ -319,71 +319,11 @@ class NativeDictationController:
                 print("✅ 音声入力①が起動しました（右コマンドキー方式）")
                 return True
             
-            # 方法2: 左コマンドキー2回押し（AppleScript使用、US配列）
-            print("方法2: 左コマンドキー2回押しを試行中（US配列）...")
-            try:
-                applescript = '''
-                tell application "System Events"
-                    key code 54
-                    delay 0.3
-                    key code 54
-                end tell
-                '''
-                result = subprocess.run(['osascript', '-e', applescript], 
-                                     capture_output=True, text=True, timeout=10)
-                if result.returncode == 0:
-                    print("✅ AppleScript経由でキー送信完了（左コマンド）")
-                else:
-                    print(f"⚠️ 左コマンドでも失敗: {result.stderr}")
-            except Exception as e:
-                print(f"❌ AppleScript実行エラー: {e}")
-                # フォールバック: PyAutoGUI使用
-                for i in range(2):
-                    pyautogui.keyDown('cmd')
-                    time.sleep(0.05)
-                    pyautogui.keyUp('cmd')
-                    if i == 0:
-                        time.sleep(0.3)
-            
-            print("音声入力の起動を待機中...")
-            time.sleep(2)
-            
-            if self.check_dictation_status():
-                print("✅ 音声入力①が起動しました（左コマンドキー方式）")
-                return True
-            
-            # 方法2: fnキー2回押し（代替方法）
-            print("方法2: fnキー2回押しを試行中...")
-            for i in range(2):
-                pyautogui.keyDown('fn')
-                time.sleep(0.05)
-                pyautogui.keyUp('fn')
-                if i == 0:
-                    time.sleep(0.3)
-            
-            time.sleep(2)
-            
-            if self.check_dictation_status():
-                print("✅ 音声入力①が起動しました（fnキー方式）")
-                return True
-            
-            # 方法3: 手動起動を案内
-            print("\n❌ 自動起動に失敗しました")
-            print("📝 手動で音声入力を起動してください:")
-            print("   システム環境設定 > キーボード > 音声入力で確認")
-            print("   設定されたショートカットを手動で実行")
-            print("\n⏳ 手動起動後、20秒間確認を続けます...")
-            
-            # 手動起動を20秒間待機
-            for attempt in range(20):
-                time.sleep(1)
-                if self.check_dictation_status():
-                    print(f"✅ 音声入力①が起動しました（手動起動、{attempt+1}秒後）")
-                    return True
-                if attempt % 5 == 0:
-                    print(f"確認中... {attempt+1}/20秒")
-            
-            print("❌ 音声入力①の起動を確認できませんでした")
+            # 起動に失敗した場合
+            print("❌ 音声入力①の自動起動に失敗しました")
+            print("💡 手動で音声入力を開始してください：")
+            print("   - 右コマンドキーを2回素早く押す")
+            print("   - またはシステム環境設定 > キーボード > 音声入力 を確認")
             return False
             
         except Exception as e:
@@ -399,7 +339,7 @@ class NativeDictationController:
             
             logger.info("Stopping native dictation...")
             
-            # AppleScriptでコマンドキー2回押下（US配列）
+            # AppleScriptで右コマンドキー2回押下（key code 54で停止）
             try:
                 applescript = '''
                 tell application "System Events"
@@ -411,23 +351,23 @@ class NativeDictationController:
                 result = subprocess.run(['osascript', '-e', applescript], 
                                       capture_output=True, text=True, timeout=10)
                 if result.returncode == 0:
-                    print("✅ AppleScript経由で停止キー送信完了")
+                    print("✅ AppleScript経由で停止キー送信完了（right cmd × 2）")
                 else:
                     print(f"⚠️ AppleScript停止警告: {result.stderr}")
                     # フォールバック: PyAutoGUI使用
                     for i in range(2):
-                        pyautogui.keyDown('cmd')
+                        pyautogui.keyDown('right_cmd')
                         time.sleep(0.05)
-                        pyautogui.keyUp('cmd')
+                        pyautogui.keyUp('right_cmd')
                         if i == 0:
                             time.sleep(0.3)
             except Exception as e:
                 print(f"❌ AppleScript停止エラー: {e}")
                 # フォールバック: PyAutoGUI使用
                 for i in range(2):
-                    pyautogui.keyDown('cmd')
+                    pyautogui.keyDown('right_cmd')
                     time.sleep(0.05)
-                    pyautogui.keyUp('cmd')
+                    pyautogui.keyUp('right_cmd')
                     if i == 0:
                         time.sleep(0.3)
             
