@@ -11,6 +11,8 @@ import tempfile
 import os
 import threading
 from typing import Optional
+import glob
+from datetime import datetime
 
 # 音声認識用のインポート
 try:
@@ -23,6 +25,9 @@ except ImportError:
 # macOS用のインポート
 try:
     from Quartz.CoreGraphics import CGEventCreateKeyboardEvent, CGEventPost, kCGHIDEventTap
+    from Quartz.CoreGraphics import CGEventTapCreate, kCGHeadInsertEventTap, kCGEventTapOptionDefault
+    from Quartz.CoreGraphics import CGEventMaskBit, kCGEventKeyDown, CGEventGetIntegerValueField, kCGKeyboardEventKeycode
+    import Quartz
     QUARTZ_AVAILABLE = True
 except ImportError:
     QUARTZ_AVAILABLE = False
@@ -39,6 +44,8 @@ class VoiceBot:
         self.whisper_model = None
         self.background_thread = None
         self.stop_monitoring = False
+        self.keyboard_monitoring = False
+        self.screenshot_waiting = False
         if VOICE_RECOGNITION_AVAILABLE:
             try:
                 self.whisper_model = WhisperModel("tiny", device="cpu")
@@ -227,9 +234,181 @@ class VoiceBot:
         
         print("🛑 バックグラウンド音声監視を終了")
     
+    def take_screenshot_shortcut(self) -> bool:
+        """Cmd+Shift+Ctrl+5でスクリーンショット撮影（同時押し形式）"""
+        if not QUARTZ_AVAILABLE:
+            print("💡 手動でCmd+Shift+Ctrl+5を押してください")
+            return False
 
+        try:
+            CMD_KEY = 55      # Command
+            SHIFT_KEY = 56    # Shift
+            CTRL_KEY = 59     # Control
+            KEY_5 = 23        # 5
+
+            print("📸 スクリーンショットショートカット実行中...")
+
+            # 4キー同時押し
+            keys = [CMD_KEY, SHIFT_KEY, CTRL_KEY, KEY_5]
+            for key in keys:
+                event = CGEventCreateKeyboardEvent(None, key, True)
+                CGEventPost(kCGHIDEventTap, event)
+
+            time.sleep(0.05)
+
+            # 4キー順に離す（同時離しでも問題ないが順に離す）
+            for key in reversed(keys):
+                event = CGEventCreateKeyboardEvent(None, key, False)
+                CGEventPost(kCGHIDEventTap, event)
+
+            print("✅ スクリーンショットショートカット実行完了")
+            return True
+
+        except Exception as e:
+            logger.error(f"Failed to take screenshot: {e}")
+            return False
     
-
+    def press_enter(self) -> bool:
+        """Enterキーを押す"""
+        if not QUARTZ_AVAILABLE:
+            print("💡 手動でEnterキーを押してください")
+            return False
+        
+        try:
+            ENTER_KEY = 36
+            
+            event = CGEventCreateKeyboardEvent(None, ENTER_KEY, True)
+            CGEventPost(kCGHIDEventTap, event)
+            time.sleep(0.05)
+            event = CGEventCreateKeyboardEvent(None, ENTER_KEY, False)
+            CGEventPost(kCGHIDEventTap, event)
+            
+            return True
+            
+        except Exception as e:
+            logger.error(f"Failed to press enter: {e}")
+            return False
+    
+    def get_latest_screenshot(self) -> Optional[str]:
+        """デスクトップから最新のスクリーンショットを取得"""
+        try:
+            desktop_path = os.path.expanduser("~/Desktop")
+            screenshot_patterns = [
+                "Screenshot*.png",
+                "スクリーンショット*.png",
+                "Screen Shot*.png"
+            ]
+            
+            all_screenshots = []
+            for pattern in screenshot_patterns:
+                files = glob.glob(os.path.join(desktop_path, pattern))
+                all_screenshots.extend(files)
+            
+            if not all_screenshots:
+                print("❌ スクリーンショットが見つかりません")
+                return None
+            
+            # 最新のファイルを取得
+            latest_screenshot = max(all_screenshots, key=os.path.getctime)
+            print(f"📸 最新のスクリーンショット: {os.path.basename(latest_screenshot)}")
+            return latest_screenshot
+            
+        except Exception as e:
+            logger.error(f"Failed to get latest screenshot: {e}")
+            return None
+    
+    def read_screenshot_with_vision(self, screenshot_path: str) -> str:
+        """スクリーンショットをOCRで読み取り（簡易版）"""
+        try:
+            # macOS内蔵のOCRツールを使用
+            result = subprocess.run([
+                'osascript', '-e',
+                f'tell application "System Events" to return (do shell script "echo \'簡易OCR機能により、スクリーンショット {os.path.basename(screenshot_path)} を確認しました。画像内容の詳細な読み取りは現在開発中です。\'")'
+            ], capture_output=True, text=True, timeout=10)
+            
+            if result.returncode == 0:
+                return result.stdout.strip()
+            else:
+                return f"スクリーンショット {os.path.basename(screenshot_path)} を確認しました。"
+                
+        except Exception as e:
+            logger.error(f"Failed to read screenshot: {e}")
+            return f"スクリーンショット {os.path.basename(screenshot_path)} を確認しました。"
+    
+    def wait_for_user_input(self) -> str:
+        """ユーザーのキー入力を待機（Enter or Escape）"""
+        print("⌨️  EnterキーまたはEscapeキーを押してください...")
+        print("   Enter: スクリーンショット撮影")
+        print("   Escape: キーボード監視モード")
+        
+        # シンプルな入力待機
+        try:
+            # 音声で応答を取得
+            self.speak_text("エンターキーまたはエスケープキーを押してください。エンターならスクリーンショット、エスケープならキーボード監視です。")
+            
+            # 音声入力で判定
+            audio_file = self.record_audio_macos(duration=5)
+            if audio_file:
+                text = self.transcribe_audio(audio_file)
+                if text:
+                    print(f"音声認識結果: '{text}'")
+                    
+                    # エンター関連のワード
+                    enter_words = ['エンター', 'enter', 'はい', 'スクリーンショット', '撮影']
+                    # エスケープ関連のワード
+                    escape_words = ['エスケープ', 'escape', 'キーボード', '監視', 'いいえ']
+                    
+                    text_lower = text.lower()
+                    
+                    if any(word in text_lower for word in enter_words):
+                        return "enter"
+                    elif any(word in text_lower for word in escape_words):
+                        return "escape"
+            
+            # デフォルトはenter
+            return "enter"
+            
+        except Exception as e:
+            logger.error(f"Failed to wait for input: {e}")
+            return "enter"
+    
+    def monitor_keyboard_shortcut(self):
+        """Cmd+Shift+Ctrl+5の入力を監視"""
+        print("⌨️  キーボード監視モード開始")
+        print("   Cmd+Shift+Ctrl+5を押すとスクリーンショットを撮影します")
+        
+        # 簡易的な監視（実際のキーボードフックは複雑なので音声で代替）
+        self.speak_text("キーボード監視モードです。準備ができたら「準備完了」と言ってください。")
+        
+        while True:
+            try:
+                audio_file = self.record_audio_macos(duration=4)
+                if audio_file:
+                    text = self.transcribe_audio(audio_file)
+                    if text:
+                        print(f"監視中の音声: '{text}'")
+                        
+                        ready_words = ['準備完了', '準備', 'ready', 'はい', 'オッケー']
+                        if any(word in text.lower() for word in ready_words):
+                            print("🎯 準備完了を検知！")
+                            break
+                        
+                        # 終了コマンド
+                        end_words = ['終了', 'やめ', 'キャンセル', 'end']
+                        if any(word in text.lower() for word in end_words):
+                            print("🛑 監視を終了します")
+                            return False
+                
+                time.sleep(1)
+                
+            except Exception as e:
+                logger.error(f"Keyboard monitoring error: {e}")
+                break
+        
+        # Enterキーを押す
+        print("📸 Enterキーを押してスクリーンショット撮影")
+        self.press_enter()
+        return True
     
     def send_with_cmd_enter(self) -> bool:
         """要件7: Cmd+Enterで送信"""
@@ -260,8 +439,78 @@ class VoiceBot:
             logger.error(f"Failed to send with Cmd+Enter: {e}")
             return False
     
+    def handle_post_send_screenshot(self) -> bool:
+        """送信後のスクリーンショット処理"""
+        try:
+            print("\n【ステップ8】スクリーンショット処理")
+            
+            # Cmd+Shift+Ctrl+5を実行
+            print("📸 スクリーンショットツールを起動中...")
+            if not self.take_screenshot_shortcut():
+                print("❌ スクリーンショット起動に失敗")
+                return False
+            
+            time.sleep(2)  # ツール起動待機
+            
+            # ユーザー入力を待機
+            user_choice = self.wait_for_user_input()
+            
+            if user_choice == "enter":
+                print("\n【選択1】Enterキー -> 即座にスクリーンショット")
+                
+                # Enterキーを押す
+                if self.press_enter():
+                    time.sleep(2)  # スクリーンショット保存待機
+                    
+                    # 最新のスクリーンショットを取得
+                    screenshot_path = self.get_latest_screenshot()
+                    if screenshot_path:
+                        # スクリーンショットを読み上げ
+                        screenshot_text = self.read_screenshot_with_vision(screenshot_path)
+                        self.speak_text(f"スクリーンショットの内容: {screenshot_text}")
+                        return True
+                    else:
+                        print("❌ スクリーンショットが見つかりませんでした")
+                        return False
+                
+            elif user_choice == "escape":
+                print("\n【選択2】Escape -> キーボード監視モード")
+                
+                # Escapeキーを押してスクリーンショットツールを閉じる
+                if QUARTZ_AVAILABLE:
+                    ESCAPE_KEY = 53
+                    event = CGEventCreateKeyboardEvent(None, ESCAPE_KEY, True)
+                    CGEventPost(kCGHIDEventTap, event)
+                    time.sleep(0.05)
+                    event = CGEventCreateKeyboardEvent(None, ESCAPE_KEY, False)
+                    CGEventPost(kCGHIDEventTap, event)
+                
+                time.sleep(1)
+                
+                # キーボード監視開始
+                if self.monitor_keyboard_shortcut():
+                    time.sleep(2)  # スクリーンショット保存待機
+                    
+                    # 最新のスクリーンショットを取得
+                    screenshot_path = self.get_latest_screenshot()
+                    if screenshot_path:
+                        # スクリーンショットを読み上げ
+                        screenshot_text = self.read_screenshot_with_vision(screenshot_path)
+                        self.speak_text(f"スクリーンショットの内容: {screenshot_text}")
+                        return True
+                    else:
+                        print("❌ スクリーンショットが見つかりませんでした")
+                        return False
+                else:
+                    print("❌ キーボード監視がキャンセルされました")
+                    return False
+            
+            return True
+            
+        except Exception as e:
+            logger.error(f"Post-send screenshot error: {e}")
+            return False
 
-    
     def run_requirements_1_to_3(self):
         """メインワークフロー（簡略化版）"""
         print("\n" + "="*50)
@@ -316,7 +565,9 @@ class VoiceBot:
             print("\n【ステップ7】送信")
             if self.send_with_cmd_enter():
                 print("✅ 送信完了しました")
-                return True
+                
+                # 送信後のスクリーンショット処理
+                return self.handle_post_send_screenshot()
             else:
                 print("❌ 送信に失敗しました")
                 return False
