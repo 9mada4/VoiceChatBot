@@ -257,3 +257,49 @@
 2025-06-28 23:39:01,340 - INFO - Stopping dictation with Quartz (Escape)
 2025-06-28 23:39:01,477 - INFO - Escape key press completed
 2025-06-28 23:39:02,587 - INFO - FinalVoiceChatBot stopped
+2025-06-28 23:42:26,042 - INFO - Whisper model loaded successfully
+2025-06-28 23:42:26,042 - INFO - VoiceCommandRecognizer initialized (macOS recording + Whisper)
+2025-06-28 23:42:26,042 - INFO - FinalVoiceChatBot initialized
+2025-06-28 23:42:26,042 - INFO - Speaking: ChatGPTアプリのウィンドウを選択し、チャット入力欄をクリックしてください。選択したら「はい」と...
+2025-06-28 23:42:35,702 - INFO - Speech completed
+2025-06-28 23:42:45,924 - INFO - Processing audio with duration 00:10.000
+2025-06-28 23:42:46,799 - INFO - Stopping native dictation...
+2025-06-28 23:42:46,800 - INFO - Stopping dictation with Quartz (Escape)
+2025-06-28 23:42:46,942 - INFO - Escape key press completed
+2025-06-28 23:42:48,055 - INFO - FinalVoiceChatBot stopped
+2025-06-28 23:44:21,684 - INFO - Whisper model loaded successfully
+2025-06-28 23:44:21,685 - INFO - VoiceCommandRecognizer initialized (macOS recording + Whisper)
+2025-06-28 23:44:21,685 - INFO - FinalVoiceChatBot initialized
+2025-06-28 23:44:21,685 - INFO - Speaking: 準備はできましたか？...
+2025-06-28 23:44:24,082 - INFO - Speech completed
+2025-06-28 23:44:34,328 - INFO - Processing audio with duration 00:10.000
+2025-06-28 23:44:41,531 - INFO - Stopping native dictation...
+2025-06-28 23:44:41,531 - INFO - Stopping dictation with Quartz (Escape)
+2025-06-28 23:44:41,669 - INFO - Escape key press completed
+2025-06-28 23:44:42,789 - INFO - FinalVoiceChatBot stopped
+2025-06-28 23:46:12,804 - INFO - Whisper model loaded successfully
+2025-06-28 23:46:12,804 - INFO - VoiceCommandRecognizer initialized (macOS recording + Whisper)
+2025-06-28 23:46:12,804 - INFO - FinalVoiceChatBot initialized
+2025-06-28 23:46:12,804 - INFO - Speaking: 準備はできましたか？...
+2025-06-28 23:46:15,173 - INFO - Speech completed
+2025-06-28 23:46:25,403 - INFO - Processing audio with duration 00:10.000
+2025-06-28 23:46:25,787 - INFO - Dictation already active
+2025-06-28 23:46:25,867 - INFO - Waiting for dictation completion...
+2025-06-28 23:46:32,197 - INFO - User interrupted
+2025-06-28 23:46:32,277 - INFO - Stopping native dictation...
+2025-06-28 23:46:32,277 - INFO - Stopping dictation with Quartz (Escape)
+2025-06-28 23:46:32,417 - INFO - Escape key press completed
+2025-06-28 23:46:33,511 - INFO - FinalVoiceChatBot stopped
+2025-06-28 23:47:20,420 - INFO - Whisper model loaded successfully
+2025-06-28 23:47:20,420 - INFO - VoiceCommandRecognizer initialized (macOS recording + Whisper)
+2025-06-28 23:47:20,420 - INFO - FinalVoiceChatBot initialized
+2025-06-28 23:47:20,420 - INFO - Speaking: 準備はできましたか？...
+2025-06-28 23:47:22,835 - INFO - Speech completed
+2025-06-28 23:47:25,020 - INFO - Processing audio with duration 00:02.000
+2025-06-28 23:47:25,396 - INFO - Dictation already active
+2025-06-28 23:47:25,472 - INFO - Waiting for dictation completion...
+2025-06-28 23:47:37,388 - INFO - User interrupted
+2025-06-28 23:47:37,465 - INFO - Stopping native dictation...
+2025-06-28 23:47:37,466 - INFO - Stopping dictation with Quartz (Escape)
+2025-06-28 23:47:37,611 - INFO - Escape key press completed
+2025-06-28 23:47:38,695 - INFO - FinalVoiceChatBot stopped

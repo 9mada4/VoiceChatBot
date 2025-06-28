@@ -226,7 +226,7 @@ class VoiceCommandRecognizer:
                 return result_text == "はい"
             
             # 音声録音
-            audio_file = self.record_audio_macos(duration=10)
+            audio_file = self.record_audio_macos(duration=2)
             
             if not audio_file:
                 # 録音失敗時は音声で再試行
@@ -507,11 +507,7 @@ class FinalVoiceChatBot:
         print("="*60)
         
         # 音声での指示（音声入力②は使わない）
-        setup_message = (
-            "ChatGPTアプリのウィンドウを選択し、"
-            "チャット入力欄をクリックしてください。"
-            "選択したら「はい」と答えてください。"
-        )
+        setup_message = "準備はできましたか？"
         
         print(f"指示: {setup_message}")
         print("\n🔊 指示を読み上げ中...")
