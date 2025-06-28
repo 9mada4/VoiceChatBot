@@ -1,0 +1,6 @@
+2025-06-28 15:46:49,554 - INFO - SimpleCommandRecognizer initialized (keyboard input mode)
+2025-06-28 15:46:49,554 - INFO - SimplifiedVoiceChatBot initialized
+2025-06-28 15:46:49,554 - INFO - Speaking: ChatGPTアプリのウィンドウを選択し、チャット入力欄をクリックしてください。...
+2025-06-28 15:46:56,548 - INFO - Speech completed
+2025-06-28 15:47:20,998 - INFO - Dictation not active
+2025-06-28 15:47:20,998 - INFO - SimplifiedVoiceChatBot stopped
