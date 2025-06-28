@@ -63,3 +63,7 @@
 2025-06-28 16:18:52,953 - ERROR - macOS recording failed: [Errno 2] No such file or directory: 'rec'
 2025-06-28 16:18:53,968 - ERROR - macOS recording failed: [Errno 2] No such file or directory: 'rec'
 2025-06-28 16:18:54,976 - ERROR - macOS recording failed: [Errno 2] No such file or directory: 'rec'
+2025-06-28 16:23:41,341 - INFO - VoiceCommandRecognizer initialized (macOS recording + Whisper)
+2025-06-28 16:23:42,354 - ERROR - macOS recording failed: [Errno 2] No such file or directory: 'rec'
+2025-06-28 16:23:43,364 - ERROR - macOS recording failed: [Errno 2] No such file or directory: 'rec'
+2025-06-28 16:23:44,372 - ERROR - macOS recording failed: [Errno 2] No such file or directory: 'rec'

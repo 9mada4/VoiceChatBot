@@ -51,7 +51,7 @@ class VoiceCommandRecognizer:
         
         logger.info("VoiceCommandRecognizer initialized")
     
-    def listen_for_command(self, timeout: int = 15) -> Optional[str]:
+    def listen_for_command(self, timeout: int = 10) -> Optional[str]:
         """音声コマンドを聞き取り"""
         try:
             logger.info("Listening for voice command...")
@@ -81,13 +81,13 @@ class VoiceCommandRecognizer:
             logger.error(f"Error in voice command recognition: {e}")
             return None
     
-    def wait_for_yes_command(self, timeout: int = 45) -> bool:
+    def wait_for_yes_command(self, timeout: int = 30) -> bool:
         """「はい」コマンドを待機"""
         logger.info("Waiting for 'はい' command...")
         
         start_time = time.time()
         while time.time() - start_time < timeout:
-            command = self.listen_for_command(timeout=8)
+            command = self.listen_for_command(timeout=10)
             if command:
                 # 「はい」の様々なバリエーションに対応
                 yes_commands = ['はい', 'hai', 'yes', 'うん', 'そうです', 'オッケー', 'ok']
