@@ -626,3 +626,43 @@
 2025-06-29 00:15:52,442 - INFO - Whisper model loaded successfully
 2025-06-29 00:15:52,442 - INFO - VoiceCommandRecognizer initialized (macOS recording + Whisper)
 2025-06-29 00:15:54,686 - INFO - Processing audio with duration 00:02.000
+2025-06-29 00:16:04,302 - INFO - Processing audio with duration 00:08.000
+2025-06-29 00:16:13,907 - INFO - Processing audio with duration 00:08.000
+2025-06-29 00:16:21,099 - INFO - Speaking: 🔍 検出されたプロセス...
+2025-06-29 00:16:24,317 - INFO - Speech completed
+2025-06-29 00:16:24,318 - INFO - Speaking: 次の質問をしますか？...
+2025-06-29 00:16:26,842 - INFO - Speech completed
+2025-06-29 00:16:29,065 - INFO - Processing audio with duration 00:02.000
+2025-06-29 00:16:29,976 - INFO - Stopping native dictation...
+2025-06-29 00:16:29,976 - INFO - Stopping dictation with Quartz (Escape)
+2025-06-29 00:16:30,120 - INFO - Escape key press completed
+2025-06-29 00:16:31,126 - INFO - FinalVoiceChatBot stopped
+2025-06-29 00:22:49,870 - INFO - Whisper model loaded successfully
+2025-06-29 00:22:49,870 - INFO - VoiceCommandRecognizer initialized (macOS recording + Whisper)
+2025-06-29 00:22:49,870 - INFO - FinalVoiceChatBot initialized
+2025-06-29 00:22:49,870 - INFO - Speaking: 準備はできましたか？...
+2025-06-29 00:22:52,241 - INFO - Speech completed
+2025-06-29 00:22:54,456 - INFO - Processing audio with duration 00:02.000
+2025-06-29 00:22:56,861 - INFO - Stopping native dictation...
+2025-06-29 00:22:56,861 - INFO - Stopping dictation with Quartz (Escape)
+2025-06-29 00:22:57,000 - INFO - Escape key press completed
+2025-06-29 00:22:58,006 - INFO - FinalVoiceChatBot stopped
+2025-06-29 00:23:05,891 - INFO - Whisper model loaded successfully
+2025-06-29 00:23:05,891 - INFO - VoiceCommandRecognizer initialized (macOS recording + Whisper)
+2025-06-29 00:23:05,891 - INFO - FinalVoiceChatBot initialized
+2025-06-29 00:23:05,891 - INFO - Speaking: 準備はできましたか？...
+2025-06-29 00:23:08,669 - INFO - Speech completed
+2025-06-29 00:23:10,849 - INFO - Processing audio with duration 00:02.000
+2025-06-29 00:23:11,133 - INFO - Starting native dictation...
+2025-06-29 00:23:11,133 - INFO - Starting dictation with Quartz (Right Command x2)
+2025-06-29 00:23:11,400 - INFO - Right command key sequence completed
+2025-06-29 00:23:13,405 - INFO - Starting native dictation...
+2025-06-29 00:23:13,405 - INFO - Starting dictation with Quartz (Right Command x2)
+2025-06-29 00:23:13,621 - INFO - Right command key sequence completed
+2025-06-29 00:23:15,622 - INFO - Waiting for dictation completion with Command+Enter monitoring...
+2025-06-29 00:23:15,623 - INFO - Starting keyboard monitoring for Command+Enter...
+2025-06-29 00:23:42,172 - INFO - User interrupted
+2025-06-29 00:23:42,172 - INFO - Stopping native dictation...
+2025-06-29 00:23:42,173 - INFO - Stopping dictation with Quartz (Escape)
+2025-06-29 00:23:42,265 - INFO - Escape key press completed
+2025-06-29 00:23:43,267 - INFO - FinalVoiceChatBot stopped
