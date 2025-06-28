@@ -315,52 +315,13 @@ class NativeDictationController:
         self.is_active = False
     
     def check_dictation_status(self) -> bool:
-        """純正音声入力の状態をチェック（改良版）"""
-        try:
-            # 方法1: プロセス監視
-            result = subprocess.run(['ps', 'aux'], capture_output=True, text=True)
-            dictation_processes = ['DictationIM', 'SpeechRecognitionServer', 'AppleSpell']
-            found_processes = []
-            
-            for process in dictation_processes:
-                if process in result.stdout:
-                    found_processes.append(process)
-                    self.is_active = True
-            
-            # 方法2: システム設定確認
-            try:
-                result2 = subprocess.run([
-                    'defaults', 'read', 'com.apple.HIToolbox', 'AppleDictationAutoEnable'
-                ], capture_output=True, text=True)
-                dictation_enabled = result2.returncode == 0
-            except:
-                dictation_enabled = False
-            
-            if found_processes:
-                print(f"🔍 検出されたプロセス: {', '.join(found_processes)}")
-                return True
-            elif dictation_enabled:
-                print("🔍 音声入力は有効ですが、アクティブではありません")
-                self.is_active = False
-                return False
-            else:
-                print("🔍 音声入力プロセスが検出されませんでした")
-                self.is_active = False
-                return False
-            
-        except Exception as e:
-            logger.error(f"Failed to check dictation status: {e}")
-            self.is_active = False
-            return False
+        """純正音声入力の状態をチェック（簡易版）"""
+        # プロセス検証は削除 - 常にFalseを返す
+        return False
     
     def start_dictation(self) -> bool:
         """純正音声入力を開始（Quartz純粋実装）"""
         try:
-            if self.check_dictation_status():
-                logger.info("Dictation already active")
-                print("✅ 音声入力①は既にアクティブです")
-                return True
-            
             logger.info("Starting native dictation...")
             print("🎤 macOS音声入力を開始しています...")
             
@@ -384,15 +345,8 @@ class NativeDictationController:
             print("音声入力の起動を待機中...")
             time.sleep(2)
             
-            if self.check_dictation_status():
-                print("✅ 音声入力①が起動しました（Quartz右コマンドキー方式）")
-                return True
-            else:
-                print("❌ 音声入力①の自動起動に失敗しました")
-                print("💡 手動で音声入力を開始してください：")
-                print("   - 右コマンドキーを2回素早く押す")
-                print("   - またはシステム環境設定 > キーボード > 音声入力 を確認")
-                return False
+            print("✅ 音声入力①の起動処理が完了しました（Quartz右コマンドキー方式）")
+            return True
             
         except Exception as e:
             logger.error(f"Failed to start dictation: {e}")
@@ -401,10 +355,6 @@ class NativeDictationController:
     def stop_dictation(self) -> bool:
         """純正音声入力を停止（Quartz純粋実装でEscapeキー）"""
         try:
-            if not self.check_dictation_status():
-                logger.info("Dictation not active")
-                return True
-            
             logger.info("Stopping native dictation...")
             print("音声入力①を停止中...")
             
@@ -421,48 +371,27 @@ class NativeDictationController:
                 print("💡 手動で音声入力を停止してください：Escapeキーを押す")
                 return False
             
-            # 停止確認
+            # 停止確認の待機
             time.sleep(1)
-            stopped = not self.check_dictation_status()
+            print("✅ 音声入力①の停止処理が完了しました")
             
-            if stopped:
-                print("✅ 音声入力①が停止しました")
-            else:
-                print("⚠️ 音声入力①の停止を確認できませんでした")
-            
-            return stopped
+            return True
             
         except Exception as e:
             logger.error(f"Failed to stop dictation: {e}")
             return False
     
-    def wait_for_dictation_completion(self, timeout: int = 60) -> bool:
-        """音声入力の完了を待機"""
+    def wait_for_dictation_completion(self, timeout: int = 10) -> bool:
+        """音声入力の完了を待機（簡易版）"""
         logger.info("Waiting for dictation completion...")
+        print("音声で質問を話した後、10秒待機します...")
         
-        start_time = time.time()
-        was_active = False
+        # 10秒待機
+        time.sleep(timeout)
         
-        # 音声入力がアクティブになるまで待機
-        while time.time() - start_time < 10:
-            if self.check_dictation_status():
-                was_active = True
-                break
-            time.sleep(0.5)
-        
-        if not was_active:
-            logger.warning("Dictation never became active")
-            return False
-        
-        # 音声入力が停止するまで待機
-        while time.time() - start_time < timeout:
-            if not self.check_dictation_status():
-                logger.info("Dictation completed")
-                return True
-            time.sleep(0.5)
-        
-        logger.warning("Dictation timeout")
-        return False
+        logger.info("Dictation wait completed")
+        print("✅ 音声入力待機完了")
+        return True
 
 class FinalVoiceChatBot:
     """最終版 Voice Chat Bot"""
@@ -536,14 +465,11 @@ class FinalVoiceChatBot:
             print("\n" + "-"*50)
             print("新しい質問を受付中...")
             
-            # 1. 音声入力①の状態をチェック・必要に応じて起動
-            if not self.dictation_controller.check_dictation_status():
-                print("🎤 音声入力①を再起動します...")
-                if not self.dictation_controller.start_dictation():
-                    print("❌ 音声入力①の開始に失敗しました")
-                    return False
-            else:
-                print("🎤 音声入力①は既にアクティブです")
+            # 1. 音声入力①を確実に起動
+            print("🎤 音声入力①を起動します...")
+            if not self.dictation_controller.start_dictation():
+                print("❌ 音声入力①の開始に失敗しました")
+                return False
             
             print("音声で質問を話してください（終了したら自動的に送信されます）")
             
@@ -601,10 +527,9 @@ class FinalVoiceChatBot:
         
         if will_continue:
             print("🔄 次の質問に進みます")
-            # 音声入力①が無効になっている場合は起動
-            if not self.dictation_controller.check_dictation_status():
-                print("🎤 音声入力①を起動しています...")
-                self.dictation_controller.start_dictation()
+            # 音声入力①を起動
+            print("🎤 音声入力①を起動しています...")
+            self.dictation_controller.start_dictation()
         else:
             print("🛑 チャットを終了します")
         

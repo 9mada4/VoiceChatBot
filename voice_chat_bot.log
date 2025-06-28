@@ -303,3 +303,326 @@
 2025-06-28 23:47:37,466 - INFO - Stopping dictation with Quartz (Escape)
 2025-06-28 23:47:37,611 - INFO - Escape key press completed
 2025-06-28 23:47:38,695 - INFO - FinalVoiceChatBot stopped
+2025-06-28 23:52:45,180 - INFO - Stopping native dictation...
+2025-06-28 23:52:45,180 - INFO - Stopping dictation with Quartz (Escape)
+2025-06-28 23:52:45,314 - INFO - Escape key press completed
+2025-06-28 23:53:06,698 - INFO - Starting dictation with Quartz (Right Command x2)
+2025-06-28 23:53:07,004 - INFO - Right command key sequence completed
+2025-06-28 23:53:10,009 - INFO - Stopping dictation with Quartz (Escape)
+2025-06-28 23:53:10,092 - INFO - Escape key press completed
+2025-06-28 23:56:26,558 - INFO - Whisper model loaded successfully
+2025-06-28 23:56:26,558 - INFO - VoiceCommandRecognizer initialized (macOS recording + Whisper)
+2025-06-28 23:56:26,558 - INFO - FinalVoiceChatBot initialized
+2025-06-28 23:56:26,558 - INFO - Speaking: 準備はできましたか？...
+2025-06-28 23:56:29,008 - INFO - Speech completed
+2025-06-28 23:56:31,209 - INFO - Processing audio with duration 00:02.000
+2025-06-28 23:56:32,387 - INFO - Starting native dictation...
+2025-06-28 23:56:32,472 - INFO - Dictation already active
+2025-06-28 23:56:32,548 - INFO - Waiting for dictation completion...
+2025-06-28 23:56:37,472 - INFO - User interrupted
+2025-06-28 23:56:37,573 - INFO - Stopping native dictation...
+2025-06-28 23:56:37,573 - INFO - Stopping dictation with Quartz (Escape)
+2025-06-28 23:56:37,711 - INFO - Escape key press completed
+2025-06-28 23:56:38,797 - INFO - FinalVoiceChatBot stopped
+2025-06-29 00:00:48,333 - INFO - Starting native dictation...
+2025-06-29 00:00:48,333 - INFO - Starting dictation with Quartz (Right Command x2)
+2025-06-29 00:00:48,602 - INFO - Right command key sequence completed
+2025-06-29 00:00:59,722 - INFO - Whisper model loaded successfully
+2025-06-29 00:00:59,722 - INFO - VoiceCommandRecognizer initialized (macOS recording + Whisper)
+2025-06-29 00:00:59,722 - INFO - FinalVoiceChatBot initialized
+2025-06-29 00:00:59,722 - INFO - Speaking: 準備はできましたか？...
+2025-06-29 00:01:02,137 - INFO - Speech completed
+2025-06-29 00:01:04,347 - INFO - Processing audio with duration 00:02.000
+2025-06-29 00:01:04,673 - INFO - Starting native dictation...
+2025-06-29 00:01:04,673 - INFO - Starting dictation with Quartz (Right Command x2)
+2025-06-29 00:01:04,938 - INFO - Right command key sequence completed
+2025-06-29 00:01:06,944 - INFO - Starting native dictation...
+2025-06-29 00:01:06,945 - INFO - Starting dictation with Quartz (Right Command x2)
+2025-06-29 00:01:07,160 - INFO - Right command key sequence completed
+2025-06-29 00:01:09,166 - INFO - Waiting for dictation completion...
+2025-06-29 00:02:09,231 - WARNING - Dictation timeout
+2025-06-29 00:02:11,442 - INFO - Processing audio with duration 00:02.000
+2025-06-29 00:02:12,136 - INFO - Whisper model loaded successfully
+2025-06-29 00:02:12,136 - INFO - VoiceCommandRecognizer initialized (macOS recording + Whisper)
+2025-06-29 00:02:14,303 - INFO - Processing audio with duration 00:02.000
+2025-06-29 00:02:14,631 - INFO - Speaking: macOS + Python + Quartz...
+2025-06-29 00:02:18,278 - INFO - Speech completed
+2025-06-29 00:02:18,279 - INFO - Speaking: 次の質問をしますか？...
+2025-06-29 00:02:20,813 - INFO - Speech completed
+2025-06-29 00:02:22,990 - INFO - Processing audio with duration 00:02.000
+2025-06-29 00:02:23,297 - INFO - Starting native dictation...
+2025-06-29 00:02:23,297 - INFO - Starting dictation with Quartz (Right Command x2)
+2025-06-29 00:02:23,511 - INFO - Right command key sequence completed
+2025-06-29 00:02:25,517 - INFO - Starting native dictation...
+2025-06-29 00:02:25,517 - INFO - Starting dictation with Quartz (Right Command x2)
+2025-06-29 00:02:25,730 - INFO - Right command key sequence completed
+2025-06-29 00:02:27,735 - INFO - Waiting for dictation completion...
+2025-06-29 00:02:44,334 - INFO - User interrupted
+2025-06-29 00:02:44,447 - INFO - Stopping native dictation...
+2025-06-29 00:02:44,447 - INFO - Stopping dictation with Quartz (Escape)
+2025-06-29 00:02:44,525 - INFO - Escape key press completed
+2025-06-29 00:02:45,636 - INFO - FinalVoiceChatBot stopped
+2025-06-29 00:05:49,495 - INFO - Whisper model loaded successfully
+2025-06-29 00:05:49,495 - INFO - VoiceCommandRecognizer initialized (macOS recording + Whisper)
+2025-06-29 00:05:49,495 - INFO - FinalVoiceChatBot initialized
+2025-06-29 00:05:49,495 - INFO - Speaking: 準備はできましたか？...
+2025-06-29 00:05:51,911 - INFO - Speech completed
+2025-06-29 00:05:54,099 - INFO - Processing audio with duration 00:02.000
+2025-06-29 00:05:54,415 - INFO - Starting native dictation...
+2025-06-29 00:05:54,415 - INFO - Starting dictation with Quartz (Right Command x2)
+2025-06-29 00:05:54,693 - INFO - Right command key sequence completed
+2025-06-29 00:05:56,696 - INFO - Starting native dictation...
+2025-06-29 00:05:56,696 - INFO - Starting dictation with Quartz (Right Command x2)
+2025-06-29 00:05:56,907 - INFO - Right command key sequence completed
+2025-06-29 00:05:58,913 - INFO - Waiting for dictation completion...
+2025-06-29 00:06:08,917 - INFO - Dictation wait completed
+2025-06-29 00:06:09,592 - INFO - Whisper model loaded successfully
+2025-06-29 00:06:09,592 - INFO - VoiceCommandRecognizer initialized (macOS recording + Whisper)
+2025-06-29 00:06:11,770 - INFO - Processing audio with duration 00:02.000
+2025-06-29 00:06:21,299 - INFO - Processing audio with duration 00:08.000
+2025-06-29 00:06:30,819 - INFO - Processing audio with duration 00:08.000
+2025-06-29 00:06:31,126 - INFO - Speaking: 🔍 検出されたプロセス...
+2025-06-29 00:06:34,351 - INFO - Speech completed
+2025-06-29 00:06:34,352 - INFO - Speaking: 次の質問をしますか？...
+2025-06-29 00:06:36,877 - INFO - Speech completed
+2025-06-29 00:06:39,057 - INFO - Processing audio with duration 00:02.000
+2025-06-29 00:06:39,383 - INFO - Starting native dictation...
+2025-06-29 00:06:39,383 - INFO - Starting dictation with Quartz (Right Command x2)
+2025-06-29 00:06:39,594 - INFO - Right command key sequence completed
+2025-06-29 00:06:41,599 - INFO - Starting native dictation...
+2025-06-29 00:06:41,600 - INFO - Starting dictation with Quartz (Right Command x2)
+2025-06-29 00:06:41,814 - INFO - Right command key sequence completed
+2025-06-29 00:06:43,819 - INFO - Waiting for dictation completion...
+2025-06-29 00:06:53,820 - INFO - Dictation wait completed
+2025-06-29 00:06:54,173 - INFO - Whisper model loaded successfully
+2025-06-29 00:06:54,174 - INFO - VoiceCommandRecognizer initialized (macOS recording + Whisper)
+2025-06-29 00:06:56,358 - INFO - Processing audio with duration 00:02.000
+2025-06-29 00:07:05,889 - INFO - Processing audio with duration 00:08.000
+2025-06-29 00:07:15,427 - INFO - Processing audio with duration 00:08.000
+2025-06-29 00:07:24,951 - INFO - Processing audio with duration 00:08.000
+2025-06-29 00:07:25,266 - INFO - Speaking: 再試行しますか？...
+2025-06-29 00:07:27,516 - INFO - Speech completed
+2025-06-29 00:07:29,701 - INFO - Processing audio with duration 00:02.000
+2025-06-29 00:07:30,017 - INFO - Starting native dictation...
+2025-06-29 00:07:30,017 - INFO - Starting dictation with Quartz (Right Command x2)
+2025-06-29 00:07:30,228 - INFO - Right command key sequence completed
+2025-06-29 00:07:32,234 - INFO - Waiting for dictation completion...
+2025-06-29 00:07:42,238 - INFO - Dictation wait completed
+2025-06-29 00:07:42,621 - INFO - Whisper model loaded successfully
+2025-06-29 00:07:42,621 - INFO - VoiceCommandRecognizer initialized (macOS recording + Whisper)
+2025-06-29 00:07:44,807 - INFO - Processing audio with duration 00:02.000
+2025-06-29 00:07:45,135 - INFO - Speaking: 再試行しますか？...
+2025-06-29 00:07:47,274 - INFO - Speech completed
+2025-06-29 00:07:49,452 - INFO - Processing audio with duration 00:02.000
+2025-06-29 00:07:49,768 - INFO - Starting native dictation...
+2025-06-29 00:07:49,768 - INFO - Starting dictation with Quartz (Right Command x2)
+2025-06-29 00:07:49,978 - INFO - Right command key sequence completed
+2025-06-29 00:07:51,984 - INFO - Waiting for dictation completion...
+2025-06-29 00:08:01,987 - INFO - Dictation wait completed
+2025-06-29 00:08:02,342 - INFO - Whisper model loaded successfully
+2025-06-29 00:08:02,343 - INFO - VoiceCommandRecognizer initialized (macOS recording + Whisper)
+2025-06-29 00:08:04,519 - INFO - Processing audio with duration 00:02.000
+2025-06-29 00:08:04,827 - INFO - Speaking: 再試行しますか？...
+2025-06-29 00:08:07,027 - INFO - Speech completed
+2025-06-29 00:08:09,203 - INFO - Processing audio with duration 00:02.000
+2025-06-29 00:08:09,540 - INFO - Starting native dictation...
+2025-06-29 00:08:09,540 - INFO - Starting dictation with Quartz (Right Command x2)
+2025-06-29 00:08:09,749 - INFO - Right command key sequence completed
+2025-06-29 00:08:11,754 - INFO - Waiting for dictation completion...
+2025-06-29 00:08:21,760 - INFO - Dictation wait completed
+2025-06-29 00:08:22,110 - INFO - Whisper model loaded successfully
+2025-06-29 00:08:22,110 - INFO - VoiceCommandRecognizer initialized (macOS recording + Whisper)
+2025-06-29 00:08:24,293 - INFO - Processing audio with duration 00:02.000
+2025-06-29 00:08:24,625 - INFO - Speaking: 再試行しますか？...
+2025-06-29 00:08:26,865 - INFO - Speech completed
+2025-06-29 00:08:29,053 - INFO - Processing audio with duration 00:02.000
+2025-06-29 00:08:29,382 - INFO - Starting native dictation...
+2025-06-29 00:08:29,382 - INFO - Starting dictation with Quartz (Right Command x2)
+2025-06-29 00:08:29,595 - INFO - Right command key sequence completed
+2025-06-29 00:08:31,600 - INFO - Waiting for dictation completion...
+2025-06-29 00:08:41,603 - INFO - Dictation wait completed
+2025-06-29 00:08:41,941 - INFO - Whisper model loaded successfully
+2025-06-29 00:08:41,941 - INFO - VoiceCommandRecognizer initialized (macOS recording + Whisper)
+2025-06-29 00:08:44,120 - INFO - Processing audio with duration 00:02.000
+2025-06-29 00:08:53,674 - INFO - Processing audio with duration 00:08.000
+2025-06-29 00:08:54,002 - INFO - Speaking: 再試行しますか？...
+2025-06-29 00:08:56,167 - INFO - Speech completed
+2025-06-29 00:08:58,344 - INFO - Processing audio with duration 00:02.000
+2025-06-29 00:08:58,690 - INFO - Starting native dictation...
+2025-06-29 00:08:58,690 - INFO - Starting dictation with Quartz (Right Command x2)
+2025-06-29 00:08:58,906 - INFO - Right command key sequence completed
+2025-06-29 00:09:00,911 - INFO - Waiting for dictation completion...
+2025-06-29 00:09:10,912 - INFO - Dictation wait completed
+2025-06-29 00:09:11,288 - INFO - Whisper model loaded successfully
+2025-06-29 00:09:11,288 - INFO - VoiceCommandRecognizer initialized (macOS recording + Whisper)
+2025-06-29 00:09:13,465 - INFO - Processing audio with duration 00:02.000
+2025-06-29 00:09:13,822 - INFO - Speaking: 再試行しますか？...
+2025-06-29 00:09:14,613 - INFO - Speech completed
+2025-06-29 00:09:16,774 - INFO - Processing audio with duration 00:02.000
+2025-06-29 00:09:17,123 - INFO - Starting native dictation...
+2025-06-29 00:09:17,123 - INFO - Starting dictation with Quartz (Right Command x2)
+2025-06-29 00:09:17,336 - INFO - Right command key sequence completed
+2025-06-29 00:09:19,342 - INFO - Waiting for dictation completion...
+2025-06-29 00:09:29,347 - INFO - Dictation wait completed
+2025-06-29 00:09:29,678 - INFO - Whisper model loaded successfully
+2025-06-29 00:09:29,679 - INFO - VoiceCommandRecognizer initialized (macOS recording + Whisper)
+2025-06-29 00:09:31,853 - INFO - Processing audio with duration 00:02.000
+2025-06-29 00:09:41,442 - INFO - Processing audio with duration 00:08.000
+2025-06-29 00:09:41,753 - INFO - Speaking: 再試行しますか？...
+2025-06-29 00:09:44,003 - INFO - Speech completed
+2025-06-29 00:09:46,180 - INFO - Processing audio with duration 00:02.000
+2025-06-29 00:09:46,514 - INFO - Starting native dictation...
+2025-06-29 00:09:46,514 - INFO - Starting dictation with Quartz (Right Command x2)
+2025-06-29 00:09:46,727 - INFO - Right command key sequence completed
+2025-06-29 00:09:48,733 - INFO - Waiting for dictation completion...
+2025-06-29 00:09:58,738 - INFO - Dictation wait completed
+2025-06-29 00:09:59,131 - INFO - Whisper model loaded successfully
+2025-06-29 00:09:59,131 - INFO - VoiceCommandRecognizer initialized (macOS recording + Whisper)
+2025-06-29 00:10:01,310 - INFO - Processing audio with duration 00:02.000
+2025-06-29 00:10:01,620 - INFO - Speaking: 再試行しますか？...
+2025-06-29 00:10:03,769 - INFO - Speech completed
+2025-06-29 00:10:05,959 - INFO - Processing audio with duration 00:02.000
+2025-06-29 00:10:06,274 - INFO - Starting native dictation...
+2025-06-29 00:10:06,275 - INFO - Starting dictation with Quartz (Right Command x2)
+2025-06-29 00:10:06,486 - INFO - Right command key sequence completed
+2025-06-29 00:10:08,491 - INFO - Waiting for dictation completion...
+2025-06-29 00:10:18,496 - INFO - Dictation wait completed
+2025-06-29 00:10:18,826 - INFO - Whisper model loaded successfully
+2025-06-29 00:10:18,826 - INFO - VoiceCommandRecognizer initialized (macOS recording + Whisper)
+2025-06-29 00:10:21,000 - INFO - Processing audio with duration 00:02.000
+2025-06-29 00:10:30,556 - INFO - Processing audio with duration 00:08.000
+2025-06-29 00:10:40,091 - INFO - Processing audio with duration 00:08.000
+2025-06-29 00:10:40,396 - INFO - Speaking: 再試行しますか？...
+2025-06-29 00:10:42,647 - INFO - Speech completed
+2025-06-29 00:10:44,834 - INFO - Processing audio with duration 00:02.000
+2025-06-29 00:10:45,143 - INFO - Starting native dictation...
+2025-06-29 00:10:45,143 - INFO - Starting dictation with Quartz (Right Command x2)
+2025-06-29 00:10:45,352 - INFO - Right command key sequence completed
+2025-06-29 00:10:47,359 - INFO - Waiting for dictation completion...
+2025-06-29 00:10:57,363 - INFO - Dictation wait completed
+2025-06-29 00:10:57,720 - INFO - Whisper model loaded successfully
+2025-06-29 00:10:57,720 - INFO - VoiceCommandRecognizer initialized (macOS recording + Whisper)
+2025-06-29 00:10:59,903 - INFO - Processing audio with duration 00:02.000
+2025-06-29 00:11:00,238 - INFO - Speaking: 再試行しますか？...
+2025-06-29 00:11:02,430 - INFO - Speech completed
+2025-06-29 00:11:04,608 - INFO - Processing audio with duration 00:02.000
+2025-06-29 00:11:04,906 - INFO - Starting native dictation...
+2025-06-29 00:11:04,906 - INFO - Starting dictation with Quartz (Right Command x2)
+2025-06-29 00:11:05,119 - INFO - Right command key sequence completed
+2025-06-29 00:11:07,124 - INFO - Waiting for dictation completion...
+2025-06-29 00:11:17,127 - INFO - Dictation wait completed
+2025-06-29 00:11:17,493 - INFO - Whisper model loaded successfully
+2025-06-29 00:11:17,493 - INFO - VoiceCommandRecognizer initialized (macOS recording + Whisper)
+2025-06-29 00:11:19,669 - INFO - Processing audio with duration 00:02.000
+2025-06-29 00:11:20,013 - INFO - Speaking: 再試行しますか？...
+2025-06-29 00:11:22,251 - INFO - Speech completed
+2025-06-29 00:11:24,435 - INFO - Processing audio with duration 00:02.000
+2025-06-29 00:11:24,747 - INFO - Starting native dictation...
+2025-06-29 00:11:24,747 - INFO - Starting dictation with Quartz (Right Command x2)
+2025-06-29 00:11:24,960 - INFO - Right command key sequence completed
+2025-06-29 00:11:26,966 - INFO - Waiting for dictation completion...
+2025-06-29 00:11:36,968 - INFO - Dictation wait completed
+2025-06-29 00:11:37,329 - INFO - Whisper model loaded successfully
+2025-06-29 00:11:37,329 - INFO - VoiceCommandRecognizer initialized (macOS recording + Whisper)
+2025-06-29 00:11:39,503 - INFO - Processing audio with duration 00:02.000
+2025-06-29 00:11:39,849 - INFO - Speaking: 再試行しますか？...
+2025-06-29 00:11:42,031 - INFO - Speech completed
+2025-06-29 00:11:44,213 - INFO - Processing audio with duration 00:02.000
+2025-06-29 00:11:44,524 - INFO - Starting native dictation...
+2025-06-29 00:11:44,524 - INFO - Starting dictation with Quartz (Right Command x2)
+2025-06-29 00:11:44,735 - INFO - Right command key sequence completed
+2025-06-29 00:11:46,741 - INFO - Waiting for dictation completion...
+2025-06-29 00:11:56,746 - INFO - Dictation wait completed
+2025-06-29 00:11:57,140 - INFO - Whisper model loaded successfully
+2025-06-29 00:11:57,140 - INFO - VoiceCommandRecognizer initialized (macOS recording + Whisper)
+2025-06-29 00:11:59,310 - INFO - Processing audio with duration 00:02.000
+2025-06-29 00:12:08,855 - INFO - Processing audio with duration 00:08.000
+2025-06-29 00:12:09,172 - INFO - Speaking: 再試行しますか？...
+2025-06-29 00:12:11,349 - INFO - Speech completed
+2025-06-29 00:12:13,529 - INFO - Processing audio with duration 00:02.000
+2025-06-29 00:12:13,843 - INFO - Starting native dictation...
+2025-06-29 00:12:13,843 - INFO - Starting dictation with Quartz (Right Command x2)
+2025-06-29 00:12:14,059 - INFO - Right command key sequence completed
+2025-06-29 00:12:16,065 - INFO - Waiting for dictation completion...
+2025-06-29 00:12:26,070 - INFO - Dictation wait completed
+2025-06-29 00:12:26,473 - INFO - Whisper model loaded successfully
+2025-06-29 00:12:26,473 - INFO - VoiceCommandRecognizer initialized (macOS recording + Whisper)
+2025-06-29 00:12:28,653 - INFO - Processing audio with duration 00:02.000
+2025-06-29 00:12:28,977 - INFO - Speaking: 再試行しますか？...
+2025-06-29 00:12:31,165 - INFO - Speech completed
+2025-06-29 00:12:33,349 - INFO - Processing audio with duration 00:02.000
+2025-06-29 00:12:33,714 - INFO - Starting native dictation...
+2025-06-29 00:12:33,714 - INFO - Starting dictation with Quartz (Right Command x2)
+2025-06-29 00:12:33,929 - INFO - Right command key sequence completed
+2025-06-29 00:12:35,935 - INFO - Waiting for dictation completion...
+2025-06-29 00:12:45,938 - INFO - Dictation wait completed
+2025-06-29 00:12:46,277 - INFO - Whisper model loaded successfully
+2025-06-29 00:12:46,277 - INFO - VoiceCommandRecognizer initialized (macOS recording + Whisper)
+2025-06-29 00:12:48,451 - INFO - Processing audio with duration 00:02.000
+2025-06-29 00:12:58,004 - INFO - Processing audio with duration 00:08.000
+2025-06-29 00:13:04,669 - INFO - Speaking: 再試行しますか？...
+2025-06-29 00:13:06,875 - INFO - Speech completed
+2025-06-29 00:13:09,053 - INFO - Processing audio with duration 00:02.000
+2025-06-29 00:13:09,385 - INFO - Starting native dictation...
+2025-06-29 00:13:09,385 - INFO - Starting dictation with Quartz (Right Command x2)
+2025-06-29 00:13:09,598 - INFO - Right command key sequence completed
+2025-06-29 00:13:11,603 - INFO - Waiting for dictation completion...
+2025-06-29 00:13:21,608 - INFO - Dictation wait completed
+2025-06-29 00:13:21,979 - INFO - Whisper model loaded successfully
+2025-06-29 00:13:21,979 - INFO - VoiceCommandRecognizer initialized (macOS recording + Whisper)
+2025-06-29 00:13:24,161 - INFO - Processing audio with duration 00:02.000
+2025-06-29 00:13:24,506 - INFO - Speaking: 再試行しますか？...
+2025-06-29 00:13:26,742 - INFO - Speech completed
+2025-06-29 00:13:28,919 - INFO - Processing audio with duration 00:02.000
+2025-06-29 00:13:29,259 - INFO - Starting native dictation...
+2025-06-29 00:13:29,259 - INFO - Starting dictation with Quartz (Right Command x2)
+2025-06-29 00:13:29,470 - INFO - Right command key sequence completed
+2025-06-29 00:13:31,475 - INFO - Waiting for dictation completion...
+2025-06-29 00:13:41,480 - INFO - Dictation wait completed
+2025-06-29 00:13:41,846 - INFO - Whisper model loaded successfully
+2025-06-29 00:13:41,846 - INFO - VoiceCommandRecognizer initialized (macOS recording + Whisper)
+2025-06-29 00:13:44,020 - INFO - Processing audio with duration 00:02.000
+2025-06-29 00:13:44,362 - INFO - Speaking: 再試行しますか？...
+2025-06-29 00:13:46,558 - INFO - Speech completed
+2025-06-29 00:13:48,738 - INFO - Processing audio with duration 00:02.000
+2025-06-29 00:13:49,079 - INFO - Starting native dictation...
+2025-06-29 00:13:49,079 - INFO - Starting dictation with Quartz (Right Command x2)
+2025-06-29 00:13:49,286 - INFO - Right command key sequence completed
+2025-06-29 00:13:51,291 - INFO - Waiting for dictation completion...
+2025-06-29 00:14:01,294 - INFO - Dictation wait completed
+2025-06-29 00:14:01,647 - INFO - Whisper model loaded successfully
+2025-06-29 00:14:01,649 - INFO - VoiceCommandRecognizer initialized (macOS recording + Whisper)
+2025-06-29 00:14:03,821 - INFO - Processing audio with duration 00:02.000
+2025-06-29 00:14:04,130 - INFO - Speaking: 再試行しますか？...
+2025-06-29 00:14:06,381 - INFO - Speech completed
+2025-06-29 00:14:08,538 - INFO - Processing audio with duration 00:02.000
+2025-06-29 00:14:08,800 - INFO - Starting native dictation...
+2025-06-29 00:14:08,800 - INFO - Starting dictation with Quartz (Right Command x2)
+2025-06-29 00:14:09,012 - INFO - Right command key sequence completed
+2025-06-29 00:14:11,014 - INFO - Waiting for dictation completion...
+2025-06-29 00:14:21,019 - INFO - Dictation wait completed
+2025-06-29 00:14:21,381 - INFO - Whisper model loaded successfully
+2025-06-29 00:14:21,382 - INFO - VoiceCommandRecognizer initialized (macOS recording + Whisper)
+2025-06-29 00:14:23,579 - INFO - Processing audio with duration 00:02.000
+2025-06-29 00:14:28,294 - INFO - User interrupted
+2025-06-29 00:14:28,309 - INFO - Stopping native dictation...
+2025-06-29 00:14:28,310 - INFO - Stopping dictation with Quartz (Escape)
+2025-06-29 00:14:28,388 - INFO - Escape key press completed
+2025-06-29 00:14:29,393 - INFO - FinalVoiceChatBot stopped
+2025-06-29 00:15:29,992 - INFO - Whisper model loaded successfully
+2025-06-29 00:15:29,992 - INFO - VoiceCommandRecognizer initialized (macOS recording + Whisper)
+2025-06-29 00:15:29,992 - INFO - FinalVoiceChatBot initialized
+2025-06-29 00:15:29,992 - INFO - Speaking: 準備はできましたか？...
+2025-06-29 00:15:35,049 - INFO - Speech completed
+2025-06-29 00:15:37,299 - INFO - Processing audio with duration 00:02.000
+2025-06-29 00:15:37,599 - INFO - Starting native dictation...
+2025-06-29 00:15:37,599 - INFO - Starting dictation with Quartz (Right Command x2)
+2025-06-29 00:15:37,858 - INFO - Right command key sequence completed
+2025-06-29 00:15:39,864 - INFO - Starting native dictation...
+2025-06-29 00:15:39,864 - INFO - Starting dictation with Quartz (Right Command x2)
+2025-06-29 00:15:40,075 - INFO - Right command key sequence completed
+2025-06-29 00:15:42,081 - INFO - Waiting for dictation completion...
+2025-06-29 00:15:52,085 - INFO - Dictation wait completed
+2025-06-29 00:15:52,442 - INFO - Whisper model loaded successfully
+2025-06-29 00:15:52,442 - INFO - VoiceCommandRecognizer initialized (macOS recording + Whisper)
+2025-06-29 00:15:54,686 - INFO - Processing audio with duration 00:02.000
