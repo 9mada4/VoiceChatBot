@@ -219,3 +219,6 @@
 2025-06-28 21:55:47,478 - INFO - User interrupted
 2025-06-28 21:55:47,595 - INFO - Stopping native dictation...
 2025-06-28 21:55:49,227 - INFO - FinalVoiceChatBot stopped
+2025-06-28 22:08:51,966 - INFO - Whisper model loaded successfully
+2025-06-28 22:08:51,966 - INFO - VoiceCommandRecognizer initialized (macOS recording + Whisper)
+2025-06-28 22:09:00,842 - INFO - Processing audio with duration 00:05.000
