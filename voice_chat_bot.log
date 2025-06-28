@@ -236,3 +236,24 @@
 2025-06-28 23:23:20,499 - INFO - Stopping native dictation...
 2025-06-28 23:23:32,789 - INFO - Dictation already active
 2025-06-28 23:23:35,911 - INFO - Stopping native dictation...
+2025-06-28 23:32:49,742 - INFO - Dictation already active
+2025-06-28 23:32:52,874 - INFO - Stopping native dictation...
+2025-06-28 23:32:52,874 - INFO - Stopping dictation with Quartz (Escape)
+2025-06-28 23:32:52,927 - INFO - Escape key press completed
+2025-06-28 23:34:44,111 - INFO - Dictation already active
+2025-06-28 23:34:47,239 - INFO - Stopping native dictation...
+2025-06-28 23:34:47,239 - INFO - Stopping dictation with Quartz (Escape)
+2025-06-28 23:34:47,292 - INFO - Escape key press completed
+2025-06-28 23:38:22,624 - INFO - Whisper model loaded successfully
+2025-06-28 23:38:22,624 - INFO - VoiceCommandRecognizer initialized (macOS recording + Whisper)
+2025-06-28 23:38:22,624 - INFO - FinalVoiceChatBot initialized
+2025-06-28 23:38:22,625 - INFO - Speaking: ChatGPTアプリのウィンドウを選択し、チャット入力欄をクリックしてください。選択したら「はい」と...
+2025-06-28 23:38:33,574 - INFO - Speech completed
+2025-06-28 23:38:43,855 - INFO - Processing audio with duration 00:10.000
+2025-06-28 23:38:44,242 - INFO - Dictation already active
+2025-06-28 23:38:44,326 - INFO - Waiting for dictation completion...
+2025-06-28 23:39:01,243 - INFO - User interrupted
+2025-06-28 23:39:01,339 - INFO - Stopping native dictation...
+2025-06-28 23:39:01,340 - INFO - Stopping dictation with Quartz (Escape)
+2025-06-28 23:39:01,477 - INFO - Escape key press completed
+2025-06-28 23:39:02,587 - INFO - FinalVoiceChatBot stopped

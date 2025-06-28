@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
 """
 統合キー操作テスト
-メインファイルのキー操作関数とPyAutoGUI直接テストの両方を実行
+メインファイルのキー操作関数とQuartzテストの両方を実行
 """
 
 import subprocess
 import time
 import sys
 import os
-import pyautogui
 
 # Quartzインポート
 try:
@@ -112,51 +111,6 @@ try:
 except ImportError:
     WHISPER_AVAILABLE = False
 
-def simple_pyautogui_test():
-    """PyAutoGUI直接テスト（超シンプル）"""
-    print("🔧 PyAutoGUI直接テスト")
-    print("-" * 30)
-    
-    # 右コマンドキーテスト
-    print("右コマンドキー2回押しテスト（3秒後）...")
-    for i in range(3, 0, -1):
-        print(f"{i}...")
-        time.sleep(1)
-    
-    try:
-        # 右コマンドキー2回押し
-        for i in range(2):
-            pyautogui.keyDown('right_cmd')
-            time.sleep(0.05)
-            pyautogui.keyUp('right_cmd')
-            if i == 0:
-                time.sleep(0.3)
-        print("✅ 右コマンドキー送信完了")
-        right_cmd_ok = True
-    except Exception as e:
-        print(f"❌ 右コマンドキーエラー: {e}")
-        right_cmd_ok = False
-    
-    # 5秒待機
-    print("5秒待機...")
-    time.sleep(5)
-    
-    # Escapeキーテスト
-    print("Escapeキーテスト（3秒後）...")
-    for i in range(3, 0, -1):
-        print(f"{i}...")
-        time.sleep(1)
-    
-    try:
-        pyautogui.press('escape')
-        print("✅ Escapeキー送信完了")
-        escape_ok = True
-    except Exception as e:
-        print(f"❌ Escapeキーエラー: {e}")
-        escape_ok = False
-    
-    return right_cmd_ok, escape_ok
-
 def main_module_test():
     """メインファイルのキー操作関数テスト"""
     if not MAIN_MODULE_AVAILABLE:
@@ -194,15 +148,21 @@ def main_module_test():
     return start_result, stop_result
 
 def main():
-    """統合キー操作テスト"""
-    print("🧪 統合キー操作テスト")
+    """統合キー操作テスト（Quartzのみ）"""
+    print("🧪 Quartz統合キー操作テスト")
     print("=" * 50)
-    print("PyAutoGUI直接テストとメインファイル関数テストを実行します")
+    print("Quartzベースのキー操作テストとメインファイル関数テストを実行します")
     
     print("\n⚠️  注意:")
     print("- macOSの「システム設定 > キーボード > 音声入力」が有効である必要があります")
     print("- アクセシビリティ権限が必要です")
     print("- 画面を見て音声入力（マイクアイコン）の表示を確認してください")
+    print("- Quartz（macOSネイティブAPI）のみを使用")
+    
+    if not QUARTZ_AVAILABLE:
+        print("❌ Quartzが利用できません")
+        print("pip install pyobjc-framework-Quartz が必要です")
+        return
     
     print("\n✨ 5秒後にテストを開始します...")
     print("中止する場合は Ctrl+C を押してください")
@@ -217,25 +177,15 @@ def main():
         # 1. Quartzテスト
         quartz_right_cmd_ok, quartz_escape_ok = quartz_test()
         
-        # 2. PyAutoGUI直接テスト
-        right_cmd_ok, escape_ok = simple_pyautogui_test()
-        
-        # 3. メインファイル関数テスト
+        # 2. メインファイル関数テスト
         start_ok, stop_ok = main_module_test()
         
         # 結果サマリー
         print("\n🏁 テスト結果サマリー")
         print("=" * 50)
-        print("Quartz（macOSネイティブAPI）テスト:")
-        if QUARTZ_AVAILABLE:
-            print(f"  右コマンドキー: {'✅ OK' if quartz_right_cmd_ok else '❌ NG'}")
-            print(f"  Escapeキー: {'✅ OK' if quartz_escape_ok else '❌ NG'}")
-        else:
-            print("  ❌ Quartzが利用できません")
-        
-        print("PyAutoGUI直接テスト:")
-        print(f"  右コマンドキー: {'✅ OK' if right_cmd_ok else '❌ NG'}")
-        print(f"  Escapeキー: {'✅ OK' if escape_ok else '❌ NG'}")
+        print("Quartz（macOSネイティブAPI）直接テスト:")
+        print(f"  右コマンドキー: {'✅ OK' if quartz_right_cmd_ok else '❌ NG'}")
+        print(f"  Escapeキー: {'✅ OK' if quartz_escape_ok else '❌ NG'}")
         
         print("メインファイル関数テスト:")
         if MAIN_MODULE_AVAILABLE:
@@ -246,8 +196,7 @@ def main():
         
         # 総合判定
         all_ok = (
-            (quartz_right_cmd_ok and quartz_escape_ok if QUARTZ_AVAILABLE else True) and
-            right_cmd_ok and escape_ok and 
+            quartz_right_cmd_ok and quartz_escape_ok and 
             (start_ok if MAIN_MODULE_AVAILABLE else True)
         )
         print(f"\n総合結果: {'🎉 全テスト成功!' if all_ok else '⚠️ 一部テストで問題あり'}")
@@ -255,14 +204,11 @@ def main():
         if not all_ok:
             print("macOSの音声入力設定やアクセシビリティ権限を確認してください")
         
-        # 推奨使用方法の表示
-        print(f"\n💡 推奨キー送信方法:")
-        if QUARTZ_AVAILABLE:
-            print("✅ Quartz（macOSネイティブAPI）が利用可能 - 最も確実")
-        if right_cmd_ok:
-            print("✅ PyAutoGUIフォールバック利用可能")
-        if not QUARTZ_AVAILABLE and not right_cmd_ok:
-            print("❌ どちらのキー送信方法も利用できません")
+        # 実装確認メッセージ
+        print(f"\n💡 実装状況:")
+        print("✅ 100% Quartz（macOSネイティブAPI）実装")
+        print("✅ PyAutoGUI依存を完全除去")
+        print("✅ sample.pyと同じQuartz実装")
             
     except KeyboardInterrupt:
         print("\n❌ テストがキャンセルされました")

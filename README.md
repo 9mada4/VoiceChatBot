@@ -15,8 +15,8 @@ MacのChatGPTアプリを**完全音声操作**するための自動化ツール
 
 ### 音声入力①（macOS純正）
 - **用途**: ChatGPTへの質問入力
-- **制御**: 右コマンドキー2回押し（PyAutoGUI自動化）
-- **停止**: Escapeキー（PyAutoGUI自動化）
+- **制御**: 右コマンドキー2回押し（Quartz macOSネイティブAPI）
+- **停止**: Escapeキー（Quartz macOSネイティブAPI）
 - **動作**: macOSの標準音声入力機能を使用
 
 ### 音声入力②（独立Whisper）
@@ -133,8 +133,8 @@ python3 voice_chat_bot.py
 #### NativeDictationController
 - macOS純正音声入力の自動制御
 - プロセス監視による状態確認  
-- PyAutoGUIによる右コマンドキー2回押し（開始）
-- PyAutoGUIによるEscapeキー（停止）
+- Quartz（macOSネイティブAPI）による右コマンドキー2回押し（開始）
+- Quartz（macOSネイティブAPI）によるEscapeキー（停止）
 
 #### VoiceCommandRecognizer  
 - 独立した音声認識システム
@@ -339,7 +339,7 @@ MIT License - 詳細は`LICENSE`ファイルを参照
 - **開発**: VoiceChatBot Project
 - **音声認識**: faster-whisper (OpenAI Whisper)
 - **TTS**: macOS標準 say コマンド
-- **UI自動化**: PyAutoGUI
+- **UI自動化**: Quartz（macOSネイティブAPI）
 - **macOS統合**: PyObjC
 
 ---
