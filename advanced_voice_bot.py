@@ -575,8 +575,7 @@ def main():
     print("2. マイクの使用許可")
     print("3. アクセシビリティ権限の付与")
     print("")
-    
-    input("準備完了後、Enterキーを押してください...")
+    print("🚀 VoiceChatBotを開始します...")
     
     try:
         bot = AdvancedVoiceChatBot()
