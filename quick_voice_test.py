@@ -74,7 +74,11 @@ def test_voice_input():
             
             # 「はい」判定テスト
             text_lower = text.lower()
-            yes_commands = ['はい', 'hai', 'yes', 'うん', 'そうです', 'オッケー', 'ok', 'そう', 'テスト']
+            yes_commands = [
+                'はい', 'hai', 'yes', 'うん', 'そうです', 'オッケー', 'ok', 'そう', 'テスト',
+                'お願い', 'します', 'いたします', 'ください', '続行', '開始', 
+                'よろしく', 'いいよ', 'いいです', 'ありがとう', 'スタート'
+            ]
             is_positive = any(word in text_lower for word in yes_commands)
             
             print(f"📝 判定結果: {'✅ ポジティブ' if is_positive else '❌ ネガティブ'}")

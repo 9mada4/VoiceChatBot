@@ -287,7 +287,7 @@ class NativeDictationController:
             print("🎤 macOS音声入力を開始しています...")
             
             # 方法1: 右コマンドキー2回押し（AppleScript使用）
-            print("方法1: 右コマンドキー2回押しを試行中...")
+            print("方法1: 右コマンドキー2回押しを試行中（US配列）...")
             try:
                 applescript = '''
                 tell application "System Events"
@@ -299,7 +299,7 @@ class NativeDictationController:
                 result = subprocess.run(['osascript', '-e', applescript], 
                                      capture_output=True, text=True, timeout=10)
                 if result.returncode == 0:
-                    print("✅ AppleScript経由でキー送信完了")
+                    print("✅ AppleScript経由でキー送信完了（US配列）")
                 else:
                     print(f"⚠️ AppleScript実行警告: {result.stderr}")
             except Exception as e:
@@ -319,8 +319,8 @@ class NativeDictationController:
                 print("✅ 音声入力①が起動しました（右コマンドキー方式）")
                 return True
             
-            # 方法2: 左コマンドキー2回押し（AppleScript使用）
-            print("方法2: 左コマンドキー2回押しを試行中...")
+            # 方法2: 左コマンドキー2回押し（AppleScript使用、US配列）
+            print("方法2: 左コマンドキー2回押しを試行中（US配列）...")
             try:
                 applescript = '''
                 tell application "System Events"
@@ -332,9 +332,9 @@ class NativeDictationController:
                 result = subprocess.run(['osascript', '-e', applescript], 
                                      capture_output=True, text=True, timeout=10)
                 if result.returncode == 0:
-                    print("✅ AppleScript経由でキー送信完了")
+                    print("✅ AppleScript経由でキー送信完了（左コマンド）")
                 else:
-                    print(f"⚠️ AppleScript実行警告: {result.stderr}")
+                    print(f"⚠️ 左コマンドでも失敗: {result.stderr}")
             except Exception as e:
                 print(f"❌ AppleScript実行エラー: {e}")
                 # フォールバック: PyAutoGUI使用
@@ -399,7 +399,7 @@ class NativeDictationController:
             
             logger.info("Stopping native dictation...")
             
-            # AppleScriptでコマンドキー2回押下
+            # AppleScriptでコマンドキー2回押下（US配列）
             try:
                 applescript = '''
                 tell application "System Events"
