@@ -26,10 +26,13 @@ except ImportError as e:
 try:
     from AppKit import NSWorkspace, NSApplication
     from Cocoa import NSPasteboard, NSStringPboardType
+    from Quartz.CoreGraphics import CGEventCreateKeyboardEvent, CGEventPost, kCGHIDEventTap
     import objc
     ACCESSIBILITY_AVAILABLE = True
+    QUARTZ_AVAILABLE = True
 except ImportError:
     ACCESSIBILITY_AVAILABLE = False
+    QUARTZ_AVAILABLE = False
     print("Warning: Accessibility frameworks not available")
 
 # ログ設定
@@ -42,6 +45,51 @@ logging.basicConfig(
     ]
 )
 logger = logging.getLogger(__name__)
+
+# macOS Quartzを使用したキー送信関数
+def press_key_quartz(keycode: int) -> bool:
+    """Quartzを使用してキーを送信"""
+    if not QUARTZ_AVAILABLE:
+        return False
+    
+    try:
+        # Key down
+        event = CGEventCreateKeyboardEvent(None, keycode, True)
+        CGEventPost(kCGHIDEventTap, event)
+        time.sleep(0.05)
+        
+        # Key up
+        event = CGEventCreateKeyboardEvent(None, keycode, False)
+        CGEventPost(kCGHIDEventTap, event)
+        
+        return True
+    except Exception as e:
+        logger.error(f"Quartz key press failed: {e}")
+        return False
+
+def press_right_command_twice_quartz() -> bool:
+    """Quartzを使用して右コマンドキーを2回送信"""
+    if not QUARTZ_AVAILABLE:
+        return False
+    
+    try:
+        # キーコード54 = Right Command
+        RIGHT_COMMAND_KEY = 54
+        
+        # 1回目
+        if not press_key_quartz(RIGHT_COMMAND_KEY):
+            return False
+        
+        time.sleep(0.3)  # 間隔
+        
+        # 2回目
+        if not press_key_quartz(RIGHT_COMMAND_KEY):
+            return False
+        
+        return True
+    except Exception as e:
+        logger.error(f"Right command key sequence failed: {e}")
+        return False
 
 class VoiceCommandRecognizer:
     """音声入力②：macOSの録音機能を使った独立音声認識"""
@@ -276,7 +324,7 @@ class NativeDictationController:
             return False
     
     def start_dictation(self) -> bool:
-        """純正音声入力を開始（PyAutoGUI使用、右コマンドキー2回連打）"""
+        """純正音声入力を開始（Quartz優先、PyAutoGUIフォールバック）"""
         try:
             if self.check_dictation_status():
                 logger.info("Dictation already active")
@@ -286,21 +334,33 @@ class NativeDictationController:
             logger.info("Starting native dictation...")
             print("🎤 macOS音声入力を開始しています...")
             
-            # PyAutoGUIで右コマンドキー2回押し
-            print("右コマンドキー2回押しを実行中...")
+            # 方法1: Quartz（macOSネイティブAPI）で右コマンドキー2回押し
+            print("方法1: Quartz（macOSネイティブAPI）で右コマンドキー2回押し...")
             try:
-                # 右コマンドキーを2回連打
-                for i in range(2):
-                    pyautogui.keyDown('right_cmd')
-                    time.sleep(0.05)
-                    pyautogui.keyUp('right_cmd')
-                    if i == 0:
-                        time.sleep(0.3)  # 1回目と2回目の間隔
+                if QUARTZ_AVAILABLE:
+                    if press_right_command_twice_quartz():
+                        print("✅ Quartz経由で右コマンドキー送信完了")
+                        quartz_success = True
+                    else:
+                        print("⚠️ Quartz送信に失敗")
+                        quartz_success = False
+                else:
+                    print("⚠️ Quartzが利用できません")
+                    quartz_success = False
                 
-                print("✅ PyAutoGUI経由で右コマンドキー送信完了")
+                # Quartzが失敗した場合のフォールバック: PyAutoGUI
+                if not quartz_success:
+                    print("方法2: PyAutoGUIフォールバック...")
+                    for i in range(2):
+                        pyautogui.keyDown('right_cmd')
+                        time.sleep(0.05)
+                        pyautogui.keyUp('right_cmd')
+                        if i == 0:
+                            time.sleep(0.3)
+                    print("✅ PyAutoGUI経由で右コマンドキー送信完了（フォールバック）")
                 
             except Exception as e:
-                print(f"❌ PyAutoGUI実行エラー: {e}")
+                print(f"❌ キー送信エラー: {e}")
                 return False
             
             print("音声入力の起動を待機中...")
@@ -322,7 +382,7 @@ class NativeDictationController:
             return False
     
     def stop_dictation(self) -> bool:
-        """純正音声入力を停止（Escapeキー）"""
+        """純正音声入力を停止（Quartz優先でEscapeキー）"""
         try:
             if not self.check_dictation_status():
                 logger.info("Dictation not active")
@@ -331,10 +391,26 @@ class NativeDictationController:
             logger.info("Stopping native dictation...")
             print("音声入力①を停止中...")
             
-            # PyAutoGUIでEscapeキーを押下
+            # 方法1: QuartzでEscapeキーを送信
             try:
-                pyautogui.press('escape')
-                print("✅ PyAutoGUI経由でEscapeキー送信完了")
+                ESCAPE_KEY = 53  # macOSでのEscapeキーのキーコード
+                
+                if QUARTZ_AVAILABLE:
+                    if press_key_quartz(ESCAPE_KEY):
+                        print("✅ Quartz経由でEscapeキー送信完了")
+                        quartz_success = True
+                    else:
+                        print("⚠️ Quartz Escape送信に失敗")
+                        quartz_success = False
+                else:
+                    print("⚠️ Quartzが利用できません")
+                    quartz_success = False
+                
+                # Quartzが失敗した場合のフォールバック: PyAutoGUI
+                if not quartz_success:
+                    print("方法2: PyAutoGUIフォールバック...")
+                    pyautogui.press('escape')
+                    print("✅ PyAutoGUI経由でEscapeキー送信完了（フォールバック）")
                 
             except Exception as e:
                 print(f"❌ PyAutoGUI停止エラー: {e}")
@@ -604,7 +680,7 @@ def main():
     print("- 音声②: Whisper音声認識（独立システム）")
     print("- 2つの音声システムが独立して動作")
     print("- 全ての確認操作を音声②で実行")
-    print("- キー操作はすべてPyAutoGUIで実行")
+    print("- キー操作: Quartz（macOSネイティブAPI）優先、PyAutoGUIフォールバック")
     print("")
     print("🚀 VoiceChatBotを開始します...")
     
