@@ -55,7 +55,6 @@ class VoiceCommandRecognizer:
         """音声コマンドを聞き取り"""
         try:
             logger.info("Listening for voice command...")
-            print("🎤 音声を聞き取り中... ゆっくりとはっきり話してください")
             
             with self.microphone as source:
                 # タイムアウト付きで音声を聞き取り（録音時間を延長）
@@ -201,28 +200,72 @@ class NativeDictationController:
             return False
     
     def start_dictation(self) -> bool:
-        """純正音声入力を開始（コマンドキー2回）"""
+        """純正音声入力を開始（複数の方法を試行）"""
         try:
             if self.check_dictation_status():
                 logger.info("Dictation already active")
+                print("✅ 音声入力①は既にアクティブです")
                 return True
             
             logger.info("Starting native dictation...")
+            print("🎤 macOS音声入力を開始しています...")
             
-            # コマンドキーを2回押下
+            # 方法1: 右コマンドキー2回押し
+            print("方法1: コマンドキー2回押しを試行中...")
             for i in range(2):
+                print(f"コマンドキー押下 {i+1}/2")
                 pyautogui.keyDown('cmd')
                 time.sleep(0.05)
                 pyautogui.keyUp('cmd')
                 if i == 0:
                     time.sleep(0.3)
             
-            # 起動確認
-            time.sleep(1.5)
-            return self.check_dictation_status()
+            print("音声入力の起動を待機中...")
+            time.sleep(2)
+            
+            if self.check_dictation_status():
+                print("✅ 音声入力①が起動しました（コマンドキー方式）")
+                return True
+            
+            # 方法2: fnキー2回押し（代替方法）
+            print("方法2: fnキー2回押しを試行中...")
+            for i in range(2):
+                print(f"fnキー押下 {i+1}/2")
+                pyautogui.keyDown('fn')
+                time.sleep(0.05)
+                pyautogui.keyUp('fn')
+                if i == 0:
+                    time.sleep(0.3)
+            
+            time.sleep(2)
+            
+            if self.check_dictation_status():
+                print("✅ 音声入力①が起動しました（fnキー方式）")
+                return True
+            
+            # 方法3: 手動起動を案内
+            print("\n❌ 自動起動に失敗しました")
+            print("📝 手動で音声入力を起動してください:")
+            print("   - システム環境設定 > キーボード > 音声入力")
+            print("   - 設定されたショートカットを確認")
+            print("   - 手動でショートカットを実行")
+            print("\n⏳ 手動起動後、30秒間確認を続けます...")
+            
+            # 手動起動を30秒間待機
+            for attempt in range(30):
+                time.sleep(1)
+                if self.check_dictation_status():
+                    print(f"✅ 音声入力①が起動しました（手動起動、{attempt+1}秒後）")
+                    return True
+                if attempt % 5 == 0:
+                    print(f"確認中... {attempt+1}/30秒")
+            
+            print("❌ 音声入力①の起動を確認できませんでした")
+            return False
             
         except Exception as e:
             logger.error(f"Failed to start dictation: {e}")
+            print(f"❌ 音声入力①開始エラー: {e}")
             return False
     
     def stop_dictation(self) -> bool:
@@ -311,10 +354,26 @@ class AdvancedVoiceChatBot:
         """テキストを読み上げ"""
         try:
             logger.info(f"Speaking: {text[:50]}...")
-            subprocess.run(['say', text], check=False)
-            logger.info("Speech completed")
+            print(f"🔊 読み上げ: {text[:50]}...")
+            
+            # sayコマンドを非同期で実行
+            process = subprocess.Popen(['say', text])
+            
+            # 読み上げ完了を待機（最大30秒）
+            try:
+                process.wait(timeout=30)
+                logger.info("Speech completed")
+                print("✅ 読み上げ完了")
+            except subprocess.TimeoutExpired:
+                logger.warning("Speech timeout")
+                process.kill()
+                print("⚠️ 読み上げタイムアウト")
+                
         except Exception as e:
             logger.error(f"Speech failed: {e}")
+            print(f"❌ 読み上げエラー: {e}")
+            # フォールバック: テキストを表示
+            print(f"📝 メッセージ: {text}")
     
     def setup_phase(self) -> bool:
         """初期セットアップフェーズ"""
@@ -330,8 +389,12 @@ class AdvancedVoiceChatBot:
         )
         
         print(f"指示: {setup_message}")
+        print("\n🔊 指示を読み上げ中...")
+        
+        # 読み上げを先に実行
         self.speak_text(setup_message)
         
+        print("🎤 準備完了の確認を待機中...")
         # 「はい」の待機
         if self.voice_commands.wait_for_yes_command(timeout=60):
             print("✅ セットアップ完了")
@@ -444,6 +507,56 @@ class AdvancedVoiceChatBot:
         self.dictation_controller.stop_dictation()
         logger.info("AdvancedVoiceChatBot stopped")
 
+def check_system_requirements():
+    """システム要件とmacOS設定の確認"""
+    print("\n🔍 システム要件チェック")
+    print("="*40)
+    
+    # 1. アクセシビリティ権限の確認
+    if ACCESSIBILITY_AVAILABLE:
+        print("✅ macOS Accessibility フレームワーク: 利用可能")
+    else:
+        print("❌ macOS Accessibility フレームワーク: 利用不可")
+    
+    # 2. 音声関連プロセスの確認
+    try:
+        result = subprocess.run(['ps', 'aux'], capture_output=True, text=True)
+        dictation_processes = ['DictationIM', 'SpeechRecognitionServer']
+        found_processes = []
+        
+        for process in dictation_processes:
+            if process in result.stdout:
+                found_processes.append(process)
+        
+        if found_processes:
+            print(f"✅ 音声入力プロセス: {', '.join(found_processes)}")
+        else:
+            print("⚠️ 音声入力プロセス: 検出されませんでした")
+            
+    except Exception as e:
+        print(f"❌ プロセス確認エラー: {e}")
+    
+    # 3. sayコマンドの確認
+    try:
+        result = subprocess.run(['say', '--version'], capture_output=True, text=True, timeout=5)
+        print("✅ macOS音声合成: 利用可能")
+    except Exception as e:
+        print(f"❌ macOS音声合成: {e}")
+    
+    # 4. PyAutoGUIの確認
+    try:
+        import pyautogui
+        print("✅ PyAutoGUI: 利用可能")
+    except Exception as e:
+        print(f"❌ PyAutoGUI: {e}")
+    
+    print("\n📋 必要な設定:")
+    print("1. システム環境設定 > キーボード > 音声入力 = オン")
+    print("2. ショートカット = 右コマンドキーを2回押す")
+    print("3. システム環境設定 > アクセシビリティ権限 = 付与")
+    print("4. ChatGPTアプリを起動してチャット画面を開く")
+    print("")
+
 def main():
     """メイン関数"""
     print("Advanced VoiceChatBot for macOS ChatGPT")
@@ -454,10 +567,8 @@ def main():
     print("- Accessibility API: ChatGPT回答取得")
     print("")
     
-    # 必要な権限の確認
-    if not ACCESSIBILITY_AVAILABLE:
-        print("⚠️ Accessibility frameworkが利用できません")
-        print("pip install pyobjc-framework-ApplicationServices")
+    # システム要件チェック
+    check_system_requirements()
     
     print("事前準備:")
     print("1. ChatGPTアプリを起動")

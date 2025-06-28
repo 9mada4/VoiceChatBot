@@ -67,3 +67,36 @@
 2025-06-28 16:23:42,354 - ERROR - macOS recording failed: [Errno 2] No such file or directory: 'rec'
 2025-06-28 16:23:43,364 - ERROR - macOS recording failed: [Errno 2] No such file or directory: 'rec'
 2025-06-28 16:23:44,372 - ERROR - macOS recording failed: [Errno 2] No such file or directory: 'rec'
+2025-06-28 19:30:39,445 - INFO - VoiceCommandRecognizer initialized (macOS recording + Whisper)
+2025-06-28 19:30:40,495 - ERROR - macOS recording failed: [Errno 2] No such file or directory: 'rec'
+2025-06-28 19:30:41,513 - ERROR - macOS recording failed: [Errno 2] No such file or directory: 'rec'
+2025-06-28 19:30:42,525 - ERROR - macOS recording failed: [Errno 2] No such file or directory: 'rec'
+2025-06-28 19:47:42,725 - INFO - Whisper model loaded successfully
+2025-06-28 19:47:42,725 - INFO - VoiceCommandRecognizer initialized (macOS recording + Whisper)
+2025-06-28 19:47:52,996 - INFO - Processing audio with duration 00:10.000
+2025-06-28 19:47:53,756 - INFO - Whisper model loaded successfully
+2025-06-28 19:47:53,756 - INFO - VoiceCommandRecognizer initialized (macOS recording + Whisper)
+2025-06-28 19:47:53,756 - INFO - FinalVoiceChatBot initialized
+2025-06-28 19:47:53,756 - INFO - Speaking: ChatGPTアプリのウィンドウを選択し、チャット入力欄をクリックしてください。選択したら「はい」と...
+2025-06-28 19:48:05,918 - INFO - Speech completed
+2025-06-28 19:48:16,184 - INFO - Processing audio with duration 00:10.000
+2025-06-28 19:48:17,093 - INFO - Starting native dictation...
+2025-06-28 19:48:19,625 - INFO - Dictation not active
+2025-06-28 19:48:19,625 - INFO - FinalVoiceChatBot stopped
+2025-06-28 19:51:38,000 - INFO - Whisper model loaded successfully
+2025-06-28 19:51:38,000 - INFO - VoiceCommandRecognizer initialized (macOS recording + Whisper)
+2025-06-28 19:51:48,266 - INFO - Processing audio with duration 00:10.000
+2025-06-28 19:51:57,991 - INFO - Whisper model loaded successfully
+2025-06-28 19:51:57,992 - INFO - VoiceCommandRecognizer initialized (macOS recording + Whisper)
+2025-06-28 19:52:08,223 - INFO - Processing audio with duration 00:10.000
+2025-06-28 19:53:45,388 - INFO - Whisper model loaded successfully
+2025-06-28 19:53:45,388 - INFO - VoiceCommandRecognizer initialized (macOS recording + Whisper)
+2025-06-28 19:53:55,644 - INFO - Processing audio with duration 00:10.000
+2025-06-28 19:53:57,131 - INFO - Whisper model loaded successfully
+2025-06-28 19:53:57,131 - INFO - VoiceCommandRecognizer initialized (macOS recording + Whisper)
+2025-06-28 19:53:57,131 - INFO - FinalVoiceChatBot initialized
+2025-06-28 19:53:57,131 - INFO - Speaking: ChatGPTアプリのウィンドウを選択し、チャット入力欄をクリックしてください。選択したら「はい」と...
+2025-06-28 19:54:06,738 - INFO - Speech completed
+2025-06-28 19:54:16,989 - INFO - Processing audio with duration 00:10.000
+2025-06-28 19:54:17,330 - INFO - Dictation already active
+2025-06-28 19:54:17,395 - INFO - Waiting for dictation completion...

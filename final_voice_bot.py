@@ -60,7 +60,7 @@ class VoiceCommandRecognizer:
         
         logger.info("VoiceCommandRecognizer initialized (macOS recording + Whisper)")
     
-    def record_audio_macos(self, duration: int = 5) -> str:
+    def record_audio_macos(self, duration: int = 10) -> str:
         """macOSのrecコマンドで音声録音"""
         try:
             # 一時ファイル作成
@@ -101,7 +101,7 @@ class VoiceCommandRecognizer:
         for attempt in range(3):
             print(f"再試行 {attempt + 1}/3:")
             time.sleep(1)
-            audio_file = self.record_audio_macos(duration=4)  # 再試行は少し短く
+            audio_file = self.record_audio_macos(duration=8)  # 再試行は少し短く
             if audio_file:
                 text = self.transcribe_audio(audio_file)
                 if text:
@@ -144,7 +144,7 @@ class VoiceCommandRecognizer:
                 return result_text == "はい"
             
             # 音声録音
-            audio_file = self.record_audio_macos(duration=5)
+            audio_file = self.record_audio_macos(duration=10)
             
             if not audio_file:
                 # 録音失敗時は音声で再試行
@@ -247,15 +247,18 @@ class NativeDictationController:
             return False
     
     def start_dictation(self) -> bool:
-        """純正音声入力を開始（コマンドキー2回）"""
+        """純正音声入力を開始（複数の方法を試行）"""
         try:
             if self.check_dictation_status():
                 logger.info("Dictation already active")
+                print("✅ 音声入力①は既にアクティブです")
                 return True
             
             logger.info("Starting native dictation...")
+            print("🎤 macOS音声入力を開始しています...")
             
-            # コマンドキーを2回押下
+            # 方法1: 右コマンドキー2回押し
+            print("方法1: コマンドキー2回押しを試行中...")
             for i in range(2):
                 pyautogui.keyDown('cmd')
                 time.sleep(0.05)
@@ -263,9 +266,46 @@ class NativeDictationController:
                 if i == 0:
                     time.sleep(0.3)
             
-            # 起動確認
-            time.sleep(1.5)
-            return self.check_dictation_status()
+            print("音声入力の起動を待機中...")
+            time.sleep(2)
+            
+            if self.check_dictation_status():
+                print("✅ 音声入力①が起動しました（コマンドキー方式）")
+                return True
+            
+            # 方法2: fnキー2回押し（代替方法）
+            print("方法2: fnキー2回押しを試行中...")
+            for i in range(2):
+                pyautogui.keyDown('fn')
+                time.sleep(0.05)
+                pyautogui.keyUp('fn')
+                if i == 0:
+                    time.sleep(0.3)
+            
+            time.sleep(2)
+            
+            if self.check_dictation_status():
+                print("✅ 音声入力①が起動しました（fnキー方式）")
+                return True
+            
+            # 方法3: 手動起動を案内
+            print("\n❌ 自動起動に失敗しました")
+            print("📝 手動で音声入力を起動してください:")
+            print("   システム環境設定 > キーボード > 音声入力で確認")
+            print("   設定されたショートカットを手動で実行")
+            print("\n⏳ 手動起動後、20秒間確認を続けます...")
+            
+            # 手動起動を20秒間待機
+            for attempt in range(20):
+                time.sleep(1)
+                if self.check_dictation_status():
+                    print(f"✅ 音声入力①が起動しました（手動起動、{attempt+1}秒後）")
+                    return True
+                if attempt % 5 == 0:
+                    print(f"確認中... {attempt+1}/20秒")
+            
+            print("❌ 音声入力①の起動を確認できませんでした")
+            return False
             
         except Exception as e:
             logger.error(f"Failed to start dictation: {e}")
@@ -339,10 +379,26 @@ class FinalVoiceChatBot:
         """テキストを読み上げ"""
         try:
             logger.info(f"Speaking: {text[:50]}...")
-            subprocess.run(['say', text], check=False)
-            logger.info("Speech completed")
+            print(f"🔊 読み上げ: {text[:50]}...")
+            
+            # sayコマンドを実行
+            result = subprocess.run(['say', text], timeout=30, check=False)
+            
+            if result.returncode == 0:
+                logger.info("Speech completed")
+                print("✅ 読み上げ完了")
+            else:
+                logger.warning(f"Speech command returned {result.returncode}")
+                print("⚠️ 読み上げ警告")
+                
+        except subprocess.TimeoutExpired:
+            logger.warning("Speech timeout")
+            print("⚠️ 読み上げタイムアウト")
         except Exception as e:
             logger.error(f"Speech failed: {e}")
+            print(f"❌ 読み上げエラー: {e}")
+            # フォールバック: テキストを表示
+            print(f"📝 メッセージ: {text}")
     
     def setup_phase(self) -> bool:
         """初期セットアップフェーズ"""
@@ -358,6 +414,7 @@ class FinalVoiceChatBot:
         )
         
         print(f"指示: {setup_message}")
+        print("\n🔊 指示を読み上げ中...")
         self.speak_text(setup_message)
         
         # ここで音声入力②で「はい」を待機
