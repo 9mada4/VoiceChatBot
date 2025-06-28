@@ -158,3 +158,8 @@
 2025-06-28 20:34:44,965 - INFO - Processing audio with duration 00:10.000
 2025-06-28 20:34:50,097 - INFO - Stopping native dictation...
 2025-06-28 20:34:52,056 - INFO - FinalVoiceChatBot stopped
+2025-06-28 20:52:22,889 - INFO - Whisper model loaded successfully
+2025-06-28 20:52:22,889 - INFO - VoiceCommandRecognizer initialized (macOS recording + Whisper)
+2025-06-28 20:59:51,448 - INFO - Dictation already active
+2025-06-28 21:00:24,476 - INFO - Dictation already active
+2025-06-28 21:00:24,558 - INFO - Stopping native dictation...

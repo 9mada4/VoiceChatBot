@@ -278,14 +278,31 @@ class NativeDictationController:
             logger.info("Starting native dictation...")
             print("🎤 macOS音声入力を開始しています...")
             
-            # 方法1: 右コマンドキー2回押し
+            # 方法1: 右コマンドキー2回押し（AppleScript使用）
             print("方法1: 右コマンドキー2回押しを試行中...")
-            for i in range(2):
-                pyautogui.keyDown('right_cmd')
-                time.sleep(0.05)
-                pyautogui.keyUp('right_cmd')
-                if i == 0:
-                    time.sleep(0.3)
+            try:
+                applescript = '''
+                tell application "System Events"
+                    key code 55
+                    delay 0.3
+                    key code 55
+                end tell
+                '''
+                result = subprocess.run(['osascript', '-e', applescript], 
+                                     capture_output=True, text=True, timeout=10)
+                if result.returncode == 0:
+                    print("✅ AppleScript経由でキー送信完了")
+                else:
+                    print(f"⚠️ AppleScript実行警告: {result.stderr}")
+            except Exception as e:
+                print(f"❌ AppleScript実行エラー: {e}")
+                # フォールバック: PyAutoGUI使用
+                for i in range(2):
+                    pyautogui.keyDown('right_cmd')
+                    time.sleep(0.05)
+                    pyautogui.keyUp('right_cmd')
+                    if i == 0:
+                        time.sleep(0.3)
             
             print("音声入力の起動を待機中...")
             time.sleep(2)
@@ -294,14 +311,31 @@ class NativeDictationController:
                 print("✅ 音声入力①が起動しました（右コマンドキー方式）")
                 return True
             
-            # 方法2: 左コマンドキー2回押し（フォールバック）
+            # 方法2: 左コマンドキー2回押し（AppleScript使用）
             print("方法2: 左コマンドキー2回押しを試行中...")
-            for i in range(2):
-                pyautogui.keyDown('cmd')
-                time.sleep(0.05)
-                pyautogui.keyUp('cmd')
-                if i == 0:
-                    time.sleep(0.3)
+            try:
+                applescript = '''
+                tell application "System Events"
+                    key code 54
+                    delay 0.3
+                    key code 54
+                end tell
+                '''
+                result = subprocess.run(['osascript', '-e', applescript], 
+                                     capture_output=True, text=True, timeout=10)
+                if result.returncode == 0:
+                    print("✅ AppleScript経由でキー送信完了")
+                else:
+                    print(f"⚠️ AppleScript実行警告: {result.stderr}")
+            except Exception as e:
+                print(f"❌ AppleScript実行エラー: {e}")
+                # フォールバック: PyAutoGUI使用
+                for i in range(2):
+                    pyautogui.keyDown('cmd')
+                    time.sleep(0.05)
+                    pyautogui.keyUp('cmd')
+                    if i == 0:
+                        time.sleep(0.3)
             
             print("音声入力の起動を待機中...")
             time.sleep(2)
@@ -357,13 +391,37 @@ class NativeDictationController:
             
             logger.info("Stopping native dictation...")
             
-            # コマンドキーを2回押下
-            for i in range(2):
-                pyautogui.keyDown('cmd')
-                time.sleep(0.05)
-                pyautogui.keyUp('cmd')
-                if i == 0:
-                    time.sleep(0.3)
+            # AppleScriptでコマンドキー2回押下
+            try:
+                applescript = '''
+                tell application "System Events"
+                    key code 54
+                    delay 0.3
+                    key code 54
+                end tell
+                '''
+                result = subprocess.run(['osascript', '-e', applescript], 
+                                      capture_output=True, text=True, timeout=10)
+                if result.returncode == 0:
+                    print("✅ AppleScript経由で停止キー送信完了")
+                else:
+                    print(f"⚠️ AppleScript停止警告: {result.stderr}")
+                    # フォールバック: PyAutoGUI使用
+                    for i in range(2):
+                        pyautogui.keyDown('cmd')
+                        time.sleep(0.05)
+                        pyautogui.keyUp('cmd')
+                        if i == 0:
+                            time.sleep(0.3)
+            except Exception as e:
+                print(f"❌ AppleScript停止エラー: {e}")
+                # フォールバック: PyAutoGUI使用
+                for i in range(2):
+                    pyautogui.keyDown('cmd')
+                    time.sleep(0.05)
+                    pyautogui.keyUp('cmd')
+                    if i == 0:
+                        time.sleep(0.3)
             
             # 停止確認
             time.sleep(1)
