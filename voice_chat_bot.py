@@ -70,7 +70,7 @@ class VoiceBot:
             temp_file.close()
             
             print(f"🎤 音声録音中... ({duration}秒)")
-            print("「はい」または「終了」と話してください")
+            print("「はい」または「終わり」と話してください")
             
             cmd = ['rec', temp_file.name, 'trim', '0', str(duration)]
             
@@ -293,7 +293,7 @@ class VoiceBot:
             return False
         
         try:
-            ENTER_KEY = 36
+            ENTER_KEY = 76
             
             event = CGEventCreateKeyboardEvent(None, ENTER_KEY, True)
             CGEventPost(kCGHIDEventTap, event)
@@ -480,7 +480,7 @@ class VoiceBot:
         
         try:
             CMD_KEY = 55     # Left Command
-            ENTER_KEY = 36   # Enter
+            ENTER_KEY = 76   # Enter
             
             print("📤 Cmd+Enterで送信中...")
             
