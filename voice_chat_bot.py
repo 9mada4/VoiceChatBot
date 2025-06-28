@@ -276,7 +276,7 @@ class NativeDictationController:
             return False
     
     def start_dictation(self) -> bool:
-        """純正音声入力を開始（複数の方法を試行）"""
+        """純正音声入力を開始（PyAutoGUI使用、右コマンドキー2回連打）"""
         try:
             if self.check_dictation_status():
                 logger.info("Dictation already active")
@@ -286,31 +286,22 @@ class NativeDictationController:
             logger.info("Starting native dictation...")
             print("🎤 macOS音声入力を開始しています...")
             
-            # 方法1: 右コマンドキー2回押し（AppleScript使用、key code 54）
-            print("方法1: 右コマンドキー2回押しを試行中（key code 54）...")
+            # PyAutoGUIで右コマンドキー2回押し
+            print("右コマンドキー2回押しを実行中...")
             try:
-                applescript = '''
-                tell application "System Events"
-                    key code 54
-                    delay 0.3
-                    key code 54
-                end tell
-                '''
-                result = subprocess.run(['osascript', '-e', applescript], 
-                                     capture_output=True, text=True, timeout=10)
-                if result.returncode == 0:
-                    print("✅ AppleScript経由でキー送信完了（右コマンド key code 54）")
-                else:
-                    print(f"⚠️ AppleScript実行警告: {result.stderr}")
-            except Exception as e:
-                print(f"❌ AppleScript実行エラー: {e}")
-                # フォールバック: PyAutoGUI使用
+                # 右コマンドキーを2回連打
                 for i in range(2):
                     pyautogui.keyDown('right_cmd')
                     time.sleep(0.05)
                     pyautogui.keyUp('right_cmd')
                     if i == 0:
-                        time.sleep(0.3)
+                        time.sleep(0.3)  # 1回目と2回目の間隔
+                
+                print("✅ PyAutoGUI経由で右コマンドキー送信完了")
+                
+            except Exception as e:
+                print(f"❌ PyAutoGUI実行エラー: {e}")
+                return False
             
             print("音声入力の起動を待機中...")
             time.sleep(2)
@@ -331,49 +322,34 @@ class NativeDictationController:
             return False
     
     def stop_dictation(self) -> bool:
-        """純正音声入力を停止（コマンドキー2回）"""
+        """純正音声入力を停止（Escapeキー）"""
         try:
             if not self.check_dictation_status():
                 logger.info("Dictation not active")
                 return True
             
             logger.info("Stopping native dictation...")
+            print("音声入力①を停止中...")
             
-            # AppleScriptで右コマンドキー2回押下（key code 54で停止）
+            # PyAutoGUIでEscapeキーを押下
             try:
-                applescript = '''
-                tell application "System Events"
-                    key code 54
-                    delay 0.3
-                    key code 54
-                end tell
-                '''
-                result = subprocess.run(['osascript', '-e', applescript], 
-                                      capture_output=True, text=True, timeout=10)
-                if result.returncode == 0:
-                    print("✅ AppleScript経由で停止キー送信完了（right cmd × 2）")
-                else:
-                    print(f"⚠️ AppleScript停止警告: {result.stderr}")
-                    # フォールバック: PyAutoGUI使用
-                    for i in range(2):
-                        pyautogui.keyDown('right_cmd')
-                        time.sleep(0.05)
-                        pyautogui.keyUp('right_cmd')
-                        if i == 0:
-                            time.sleep(0.3)
+                pyautogui.press('escape')
+                print("✅ PyAutoGUI経由でEscapeキー送信完了")
+                
             except Exception as e:
-                print(f"❌ AppleScript停止エラー: {e}")
-                # フォールバック: PyAutoGUI使用
-                for i in range(2):
-                    pyautogui.keyDown('right_cmd')
-                    time.sleep(0.05)
-                    pyautogui.keyUp('right_cmd')
-                    if i == 0:
-                        time.sleep(0.3)
+                print(f"❌ PyAutoGUI停止エラー: {e}")
+                return False
             
             # 停止確認
             time.sleep(1)
-            return not self.check_dictation_status()
+            stopped = not self.check_dictation_status()
+            
+            if stopped:
+                print("✅ 音声入力①が停止しました")
+            else:
+                print("⚠️ 音声入力①の停止を確認できませんでした")
+            
+            return stopped
             
         except Exception as e:
             logger.error(f"Failed to stop dictation: {e}")
@@ -624,10 +600,11 @@ def main():
     print("")
     
     print("重要なポイント:")
-    print("- 音声①: macOS純正音声入力（コマンド2回）")
+    print("- 音声①: macOS純正音声入力（右コマンド2回で開始、Escapeで停止）")
     print("- 音声②: Whisper音声認識（独立システム）")
     print("- 2つの音声システムが独立して動作")
     print("- 全ての確認操作を音声②で実行")
+    print("- キー操作はすべてPyAutoGUIで実行")
     print("")
     print("🚀 VoiceChatBotを開始します...")
     

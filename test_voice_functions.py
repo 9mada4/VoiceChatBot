@@ -9,6 +9,7 @@ import time
 import subprocess
 import tempfile
 import os
+import pyautogui
 from typing import Optional
 
 def print_header(title: str):
@@ -200,32 +201,25 @@ def test_pyautogui():
         return False
 
 def test_right_cmd_key():
-    """右コマンドキー2回押しテスト（AppleScript使用、key code 54）"""
+    """右コマンドキー2回押しテスト（PyAutoGUI使用）"""
     print_header("右コマンドキー2回押しテスト")
     
-    print_test("AppleScript経由の右コマンドキー動作テスト（key code 54）")
+    print_test("PyAutoGUI経由の右コマンドキー動作テスト")
     try:
         print("⚠️  3秒後に右コマンドキー2回押しを実行します")
         print("音声入力が起動するか確認してください...")
         time.sleep(3)
         
-        # 右コマンドキー（key code 54）で試行
-        applescript = '''
-        tell application "System Events"
-            key code 54
-            delay 0.3
-            key code 54
-        end tell
-        '''
+        # PyAutoGUIで右コマンドキー2回押し
         
-        result = subprocess.run(['osascript', '-e', applescript], 
-                              capture_output=True, text=True, timeout=10)
+        for i in range(2):
+            pyautogui.keyDown('right_cmd')
+            time.sleep(0.05)
+            pyautogui.keyUp('right_cmd')
+            if i == 0:
+                time.sleep(0.3)  # 1回目と2回目の間隔
         
-        if result.returncode == 0:
-            print_result(True, "AppleScript経由の右コマンドキー2回押し実行完了（key code 54）")
-        else:
-            print_result(False, f"右コマンド実行エラー: {result.stderr}")
-            return False
+        print_result(True, "PyAutoGUI経由の右コマンドキー2回押し実行完了")
         
         # プロセス確認
         print_test("音声入力プロセス確認")

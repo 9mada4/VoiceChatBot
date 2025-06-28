@@ -8,6 +8,7 @@ import subprocess
 import time
 import sys
 import os
+import pyautogui
 
 # 音声入力用のWhisperインポート
 try:
@@ -68,8 +69,8 @@ def get_voice_confirmation(prompt):
         return True  # エラー時はデフォルトで続行
 
 def simple_test_right_command_key():
-    """右コマンドキー（key code 54）の簡略化テスト"""
-    print(f"\n🔧 簡略テスト: 右コマンドキー (key code 54)")
+    """右コマンドキーの簡略化テスト（PyAutoGUI使用）"""
+    print(f"\n🔧 簡略テスト: 右コマンドキー（PyAutoGUI）")
     print("3秒後に右コマンドキーを2回押します...")
     print("⚠️  macOSの「システム設定 > キーボード > 音声入力」が有効になっている必要があります")
     print("📱 画面を見て、音声入力（マイクアイコン）が表示されるか確認してください")
@@ -79,73 +80,44 @@ def simple_test_right_command_key():
         time.sleep(1)
     
     try:
-        applescript = '''
-        tell application "System Events"
-            key code 54
-            delay 0.5
-            key code 54
-        end tell
-        '''
+        # PyAutoGUIで右コマンドキー2回押し
+        for i in range(2):
+            pyautogui.keyDown('right_cmd')
+            time.sleep(0.05)
+            pyautogui.keyUp('right_cmd')
+            if i == 0:
+                time.sleep(0.3)
         
-        result = subprocess.run(['osascript', '-e', applescript], 
-                              capture_output=True, text=True, timeout=10)
+        print(f"✅ PyAutoGUI経由で右コマンドキー送信成功")
         
-        if result.returncode == 0:
-            print(f"✅ key code 54 送信成功")
-            
-            # 待機して、プロセス確認
-            print("音声入力の起動を確認中...")
-            time.sleep(3)
-            
-            # 複数の方法で音声入力プロセス確認
-            ps_result = subprocess.run(['ps', 'aux'], capture_output=True, text=True)
-            dictation_found = False
-            found_processes = []
-            
-            # 音声入力関連プロセスの検出
-            voice_processes = ['DictationIM', 'VoiceOver', 'SpeechRecognition', 'Dictation', 'speechd']
-            for process in voice_processes:
-                if process in ps_result.stdout:
-                    found_processes.append(process)
-                    dictation_found = True
-            
-            if found_processes:
-                print(f"🎤 検出された音声関連プロセス: {', '.join(found_processes)}")
-            
-            # AppleScriptで音声入力ダイアログの存在を確認
-            check_dialog_script = '''
-            tell application "System Events"
-                set dialogExists to false
-                try
-                    if exists (window 1 of application process "Dictation") then
-                        set dialogExists to true
-                    end if
-                end try
-                return dialogExists
-            end tell
-            '''
-            
-            dialog_result = subprocess.run(['osascript', '-e', check_dialog_script], 
-                                         capture_output=True, text=True)
-            
-            if dialog_result.returncode == 0 and 'true' in dialog_result.stdout:
-                print(f"🎤 音声入力ダイアログが検出されました！")
+        # 待機して、プロセス確認
+        print("音声入力の起動を確認中...")
+        time.sleep(3)
+        
+        # 複数の方法で音声入力プロセス確認
+        ps_result = subprocess.run(['ps', 'aux'], capture_output=True, text=True)
+        dictation_found = False
+        found_processes = []
+        
+        # 音声入力関連プロセスの検出
+        voice_processes = ['DictationIM', 'VoiceOver', 'SpeechRecognition', 'Dictation', 'speechd']
+        for process in voice_processes:
+            if process in ps_result.stdout:
+                found_processes.append(process)
                 dictation_found = True
-            
-            # 手動で音声入力を停止
-            print("音声入力を停止します...")
-            stop_script = '''
-            tell application "System Events"
-                key code 54
-            end tell
-            '''
-            subprocess.run(['osascript', '-e', stop_script], capture_output=True)
-            
-            return dictation_found
-            
-        else:
-            print(f"❌ key code 54 送信失敗: {result.stderr}")
-            return False
+        
+        if found_processes:
+            print(f"🎤 検出された音声関連プロセス: {', '.join(found_processes)}")
+        
+        # 手動で音声入力を停止（Escapeキー）
+        print("音声入力を停止します（Escapeキー）...")
+        pyautogui.press('escape')
+        
+        return dictation_found
+        
+    except Exception as e:
+        print(f"❌ エラー: {e}")
+        return False
             
     except Exception as e:
         print(f"❌ エラー: {e}")
