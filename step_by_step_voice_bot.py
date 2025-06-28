@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-VoiceChatBot - Simple Voice-Controlled ChatGPT Automation for macOS
-シンプル版：最小限のワークフローで音声制御
+Step-by-Step Voice Chat Bot
+要件を段階的に実装するシンプル版
 """
 
 import time
@@ -32,8 +32,8 @@ except ImportError:
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-class VoiceBot:
-    """シンプル音声ボット"""
+class StepByStepVoiceBot:
+    """段階的実装の音声ボット"""
     
     def __init__(self):
         self.whisper_model = None
@@ -263,20 +263,21 @@ class VoiceBot:
 
     
     def run_requirements_1_to_3(self):
-        """メインワークフロー（簡略化版）"""
+        """要件1-3を実装（簡略化版）"""
         print("\n" + "="*50)
-        print("VoiceChatBot - シンプル音声制御")
+        print("Step-by-Step Voice Bot")
+        print("要件1-3の実装（簡略化版）")
         print("="*50)
         
         # 要件1: 「準備はできましたか？」読み上げ + 音声入力②（4秒）
-        print("\n【ステップ1】準備確認")
+        print("\n【要件1】準備確認")
         self.speak_text("準備はできましたか？")
         
         response = self.get_voice_response(duration=4)  # 4秒に変更
         
         if response:
             # 要件2: 「はい」→「お話しください」読み上げ + 音声入力①起動
-            print("\n【ステップ2】音声入力開始")
+            print("\n【要件2】音声入力開始")
             self.speak_text("お話しください")
             
             if self.start_dictation():
@@ -287,13 +288,13 @@ class VoiceBot:
                 return False
         else:
             # 要件3: 「終了」→終了（常に終了）
-            print("\n【ステップ3】終了")
+            print("\n【要件3】終了")
             print("👋 プログラムを終了します")
             return False
     
     def run_requirements_4_to_7(self):
-        """ステップ4-7を実装（簡略化版）"""
-        print("\n【ステップ4-7】音声入力処理と送信")
+        """要件4-7を実装（簡略化版）"""
+        print("\n【要件4-7】音声入力処理と送信")
         
         try:
             # 要件4: バックグラウンドで音声入力②を起動
@@ -313,7 +314,7 @@ class VoiceBot:
                 self.stop_dictation()
             
             # 要件7: Cmd+Enterで送信
-            print("\n【ステップ7】送信")
+            print("\n【要件7】送信")
             if self.send_with_cmd_enter():
                 print("✅ 送信完了しました")
                 return True
@@ -327,9 +328,9 @@ class VoiceBot:
 
 def main():
     """メイン関数"""
-    print("VoiceChatBot for macOS")
-    print("=====================")
-    print("超シンプルワークフロー:")
+    print("Step-by-Step Voice Bot for macOS")
+    print("================================")
+    print("簡略化されたワークフロー:")
     print("1. 準備確認")
     print("2. 音声入力開始")
     print("3. 音声入力終了の検知")
@@ -337,7 +338,7 @@ def main():
     print("※「終了」は常に終了になりました（ひらがな・漢字・カタカナ対応）")
     print("")
     
-    bot = VoiceBot()
+    bot = StepByStepVoiceBot()
     success = bot.run_requirements_1_to_3()
     
     if success:

@@ -666,3 +666,61 @@
 2025-06-29 00:23:42,173 - INFO - Stopping dictation with Quartz (Escape)
 2025-06-29 00:23:42,265 - INFO - Escape key press completed
 2025-06-29 00:23:43,267 - INFO - FinalVoiceChatBot stopped
+2025-06-29 00:28:05,732 - INFO - Whisper model loaded successfully
+2025-06-29 00:28:05,732 - INFO - VoiceCommandRecognizer initialized (macOS recording + Whisper)
+2025-06-29 00:28:05,732 - INFO - FinalVoiceChatBot initialized
+2025-06-29 00:28:05,732 - INFO - Speaking: 準備はできましたか？...
+2025-06-29 00:28:35,752 - WARNING - Speech timeout
+2025-06-29 00:28:37,981 - INFO - Processing audio with duration 00:02.000
+2025-06-29 00:28:38,935 - INFO - Starting native dictation...
+2025-06-29 00:28:38,935 - INFO - Starting dictation with Quartz (Right Command x2)
+2025-06-29 00:28:39,211 - INFO - Right command key sequence completed
+2025-06-29 00:28:41,216 - INFO - Starting native dictation...
+2025-06-29 00:28:41,217 - INFO - Starting dictation with Quartz (Right Command x2)
+2025-06-29 00:28:41,433 - INFO - Right command key sequence completed
+2025-06-29 00:28:43,435 - INFO - Waiting for Command+Enter only...
+2025-06-29 00:28:43,435 - INFO - Starting simple keyboard monitoring for Command+Enter...
+2025-06-29 00:28:50,277 - WARNING - Command+Enter wait interrupted
+2025-06-29 00:28:50,278 - INFO - Keyboard monitoring stopped
+2025-06-29 00:28:50,278 - INFO - Speaking: 再試行しますか？...
+2025-06-29 00:28:52,487 - INFO - Speech completed
+2025-06-29 00:28:54,671 - INFO - Processing audio with duration 00:02.000
+2025-06-29 00:29:04,230 - INFO - Processing audio with duration 00:08.000
+2025-06-29 00:29:04,805 - INFO - Starting native dictation...
+2025-06-29 00:29:04,806 - INFO - Starting dictation with Quartz (Right Command x2)
+2025-06-29 00:29:05,017 - INFO - Right command key sequence completed
+2025-06-29 00:29:07,021 - INFO - Waiting for Command+Enter only...
+2025-06-29 00:29:07,022 - INFO - Starting simple keyboard monitoring for Command+Enter...
+2025-06-29 00:29:25,142 - INFO - Manual Command+Enter confirmation received
+2025-06-29 00:29:25,143 - INFO - Keyboard monitoring stopped
+2025-06-29 00:29:25,143 - INFO - Stopping native dictation...
+2025-06-29 00:29:25,144 - INFO - Stopping dictation with Quartz (Escape)
+2025-06-29 00:29:25,238 - INFO - Escape key press completed
+2025-06-29 00:29:26,243 - INFO - Dictation stopped successfully after Command+Enter
+2025-06-29 00:29:26,611 - INFO - Whisper model loaded successfully
+2025-06-29 00:29:26,611 - INFO - VoiceCommandRecognizer initialized (macOS recording + Whisper)
+2025-06-29 00:29:28,803 - INFO - Processing audio with duration 00:02.000
+2025-06-29 00:29:29,579 - INFO - Speaking: 🔍 検出されたプロセス...
+2025-06-29 00:29:32,742 - INFO - Speech completed
+2025-06-29 00:29:32,742 - INFO - Speaking: 次の質問をしますか？...
+2025-06-29 00:29:35,260 - INFO - Speech completed
+2025-06-29 00:29:37,445 - INFO - Processing audio with duration 00:02.000
+2025-06-29 00:29:37,627 - INFO - User interrupted
+2025-06-29 00:29:37,627 - INFO - Stopping native dictation...
+2025-06-29 00:29:37,627 - INFO - Stopping dictation with Quartz (Escape)
+2025-06-29 00:29:37,682 - INFO - Escape key press completed
+2025-06-29 00:29:38,688 - INFO - FinalVoiceChatBot stopped
+2025-06-29 01:07:42,876 - INFO - Whisper model loaded successfully
+2025-06-29 01:07:42,876 - INFO - VoiceCommandRecognizer initialized (macOS recording + Whisper)
+2025-06-29 01:07:42,876 - INFO - FinalVoiceChatBot initialized
+2025-06-29 01:07:42,877 - INFO - Speaking: 準備はできましたか？...
+2025-06-29 01:07:45,249 - INFO - Speech completed
+2025-06-29 01:07:47,616 - INFO - Processing audio with duration 00:02.000
+2025-06-29 01:07:47,872 - INFO - Starting native dictation...
+2025-06-29 01:07:47,872 - INFO - Starting dictation with Quartz (Right Command x2)
+2025-06-29 01:07:48,149 - INFO - Right command key sequence completed
+2025-06-29 01:07:50,154 - INFO - Starting native dictation...
+2025-06-29 01:07:50,155 - INFO - Starting dictation with Quartz (Right Command x2)
+2025-06-29 01:07:50,362 - INFO - Right command key sequence completed
+2025-06-29 01:07:52,366 - INFO - Waiting for Command+Enter only...
+2025-06-29 01:07:52,367 - INFO - Starting simple keyboard monitoring for Command+Enter...
