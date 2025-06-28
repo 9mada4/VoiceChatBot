@@ -73,7 +73,7 @@ rec --version
 
 ```bash
 cd VoiceChatBot
-python3 final_voice_bot.py
+python3 voice_chat_bot.py
 ```
 
 ### 📝 完全音声ワークフロー
@@ -147,7 +147,7 @@ python3 final_voice_bot.py
 ### ファイル構成
 ```
 VoiceChatBot/
-├── final_voice_bot.py          # メインアプリケーション
+├── voice_chat_bot.py          # メインアプリケーション
 ├── requirements.txt            # Python依存関係
 ├── setup.sh                   # セットアップスクリプト
 ├── README.md                  # このドキュメント
@@ -236,7 +236,7 @@ kill [PID]  # 必要に応じて
 ## 開発・カスタマイズ
 
 ### 音声認識精度の調整
-`final_voice_bot.py`の以下の部分を編集:
+`voice_chat_bot.py`の以下の部分を編集:
 ```python
 # 録音時間の調整（デフォルト5秒）
 audio_file = self.record_audio_macos(duration=5)  # 5秒 → 7秒等

@@ -278,35 +278,37 @@ class NativeDictationController:
             logger.info("Starting native dictation...")
             print("🎤 macOS音声入力を開始しています...")
             
-            # ChatGPTアプリにフォーカスを当てる
-            try:
-                workspace = NSWorkspace.sharedWorkspace()
-                chatgpt_app = workspace.launchedApplications()
-                for app in chatgpt_app:
-                    if app.get('NSApplicationBundleIdentifier') == 'com.openai.chat':
-                        print("ChatGPTアプリにフォーカス中...")
-                        pyautogui.click(500, 300)  # 画面中央付近をクリック
-                        time.sleep(0.5)
-                        break
-            except:
-                pass
+            # 方法1: 右コマンドキー2回押し
+            print("方法1: 右コマンドキー2回押しを試行中...")
+            for i in range(2):
+                pyautogui.keyDown('right_cmd')
+                time.sleep(0.05)
+                pyautogui.keyUp('right_cmd')
+                if i == 0:
+                    time.sleep(0.3)
             
-            # 方法1: 右コマンドキー2回押し（改良版）
-            print("方法1: コマンドキー2回押しを試行中...")
-            for attempt in range(3):  # 3回試行
-                for i in range(2):
-                    pyautogui.keyDown('cmd')
-                    time.sleep(0.1)  # 少し長めに
-                    pyautogui.keyUp('cmd')
-                    if i == 0:
-                        time.sleep(0.5)  # 間隔を長めに
-                
-                print(f"音声入力の起動を待機中... (試行 {attempt + 1}/3)")
-                time.sleep(3)  # 長めに待機
-                
-                if self.check_dictation_status():
-                    print("✅ 音声入力①が起動しました（コマンドキー方式）")
-                    return True
+            print("音声入力の起動を待機中...")
+            time.sleep(2)
+            
+            if self.check_dictation_status():
+                print("✅ 音声入力①が起動しました（右コマンドキー方式）")
+                return True
+            
+            # 方法2: 左コマンドキー2回押し（フォールバック）
+            print("方法2: 左コマンドキー2回押しを試行中...")
+            for i in range(2):
+                pyautogui.keyDown('cmd')
+                time.sleep(0.05)
+                pyautogui.keyUp('cmd')
+                if i == 0:
+                    time.sleep(0.3)
+            
+            print("音声入力の起動を待機中...")
+            time.sleep(2)
+            
+            if self.check_dictation_status():
+                print("✅ 音声入力①が起動しました（左コマンドキー方式）")
+                return True
             
             # 方法2: fnキー2回押し（代替方法）
             print("方法2: fnキー2回押しを試行中...")
