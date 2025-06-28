@@ -229,21 +229,42 @@ class NativeDictationController:
         self.is_active = False
     
     def check_dictation_status(self) -> bool:
-        """純正音声入力の状態をチェック"""
+        """純正音声入力の状態をチェック（改良版）"""
         try:
+            # 方法1: プロセス監視
             result = subprocess.run(['ps', 'aux'], capture_output=True, text=True)
-            dictation_processes = ['DictationIM', 'SpeechRecognitionServer']
+            dictation_processes = ['DictationIM', 'SpeechRecognitionServer', 'AppleSpell']
+            found_processes = []
             
             for process in dictation_processes:
                 if process in result.stdout:
+                    found_processes.append(process)
                     self.is_active = True
-                    return True
             
-            self.is_active = False
-            return False
+            # 方法2: システム設定確認
+            try:
+                result2 = subprocess.run([
+                    'defaults', 'read', 'com.apple.HIToolbox', 'AppleDictationAutoEnable'
+                ], capture_output=True, text=True)
+                dictation_enabled = result2.returncode == 0
+            except:
+                dictation_enabled = False
+            
+            if found_processes:
+                print(f"🔍 検出されたプロセス: {', '.join(found_processes)}")
+                return True
+            elif dictation_enabled:
+                print("🔍 音声入力は有効ですが、アクティブではありません")
+                self.is_active = False
+                return False
+            else:
+                print("🔍 音声入力プロセスが検出されませんでした")
+                self.is_active = False
+                return False
             
         except Exception as e:
             logger.error(f"Failed to check dictation status: {e}")
+            self.is_active = False
             return False
     
     def start_dictation(self) -> bool:
@@ -257,21 +278,35 @@ class NativeDictationController:
             logger.info("Starting native dictation...")
             print("🎤 macOS音声入力を開始しています...")
             
-            # 方法1: 右コマンドキー2回押し
+            # ChatGPTアプリにフォーカスを当てる
+            try:
+                workspace = NSWorkspace.sharedWorkspace()
+                chatgpt_app = workspace.launchedApplications()
+                for app in chatgpt_app:
+                    if app.get('NSApplicationBundleIdentifier') == 'com.openai.chat':
+                        print("ChatGPTアプリにフォーカス中...")
+                        pyautogui.click(500, 300)  # 画面中央付近をクリック
+                        time.sleep(0.5)
+                        break
+            except:
+                pass
+            
+            # 方法1: 右コマンドキー2回押し（改良版）
             print("方法1: コマンドキー2回押しを試行中...")
-            for i in range(2):
-                pyautogui.keyDown('cmd')
-                time.sleep(0.05)
-                pyautogui.keyUp('cmd')
-                if i == 0:
-                    time.sleep(0.3)
-            
-            print("音声入力の起動を待機中...")
-            time.sleep(2)
-            
-            if self.check_dictation_status():
-                print("✅ 音声入力①が起動しました（コマンドキー方式）")
-                return True
+            for attempt in range(3):  # 3回試行
+                for i in range(2):
+                    pyautogui.keyDown('cmd')
+                    time.sleep(0.1)  # 少し長めに
+                    pyautogui.keyUp('cmd')
+                    if i == 0:
+                        time.sleep(0.5)  # 間隔を長めに
+                
+                print(f"音声入力の起動を待機中... (試行 {attempt + 1}/3)")
+                time.sleep(3)  # 長めに待機
+                
+                if self.check_dictation_status():
+                    print("✅ 音声入力①が起動しました（コマンドキー方式）")
+                    return True
             
             # 方法2: fnキー2回押し（代替方法）
             print("方法2: fnキー2回押しを試行中...")
