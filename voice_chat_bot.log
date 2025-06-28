@@ -4,3 +4,53 @@
 2025-06-28 15:46:56,548 - INFO - Speech completed
 2025-06-28 15:47:20,998 - INFO - Dictation not active
 2025-06-28 15:47:20,998 - INFO - SimplifiedVoiceChatBot stopped
+2025-06-28 15:52:06,331 - INFO - SimpleCommandRecognizer initialized (dedicated voice input)
+2025-06-28 15:52:06,332 - INFO - SimplifiedVoiceChatBot initialized
+2025-06-28 15:52:06,333 - INFO - Speaking: ChatGPTアプリのウィンドウを選択し、チャット入力欄をクリックしてください。...
+2025-06-28 15:52:14,011 - INFO - Speech completed
+2025-06-28 15:52:36,817 - INFO - Stopping native dictation...
+2025-06-28 15:52:38,741 - INFO - SimplifiedVoiceChatBot stopped
+2025-06-28 15:53:10,380 - INFO - SimpleCommandRecognizer initialized (dedicated voice input)
+2025-06-28 15:53:10,380 - INFO - SimplifiedVoiceChatBot initialized
+2025-06-28 15:53:10,381 - INFO - Speaking: ChatGPTアプリのウィンドウを選択し、チャット入力欄をクリックしてください。...
+2025-06-28 15:53:17,210 - INFO - Speech completed
+2025-06-28 15:53:33,200 - INFO - Dictation already active
+2025-06-28 15:53:33,200 - INFO - Waiting for dictation completion...
+2025-06-28 15:54:25,593 - INFO - VoiceCommandRecognizer initialized (clipboard monitoring)
+2025-06-28 15:54:25,594 - INFO - FinalVoiceChatBot initialized
+2025-06-28 15:54:25,595 - INFO - Speaking: ChatGPTアプリのウィンドウを選択し、チャット入力欄をクリックしてください。...
+2025-06-28 15:54:32,391 - INFO - Speech completed
+2025-06-28 15:54:50,468 - INFO - New voice command detected: はい
+2025-06-28 15:54:50,559 - INFO - Dictation already active
+2025-06-28 15:54:50,560 - INFO - Waiting for dictation completion...
+2025-06-28 15:55:51,156 - WARNING - Dictation timeout
+2025-06-28 15:55:51,159 - INFO - VoiceCommandRecognizer initialized (clipboard monitoring)
+2025-06-28 15:56:22,191 - INFO - VoiceCommandRecognizer initialized (clipboard monitoring)
+2025-06-28 15:56:22,191 - INFO - FinalVoiceChatBot initialized
+2025-06-28 15:56:22,191 - INFO - Speaking: ChatGPTアプリのウィンドウを選択し、チャット入力欄をクリックしてください。...
+2025-06-28 15:56:28,980 - INFO - Speech completed
+2025-06-28 16:02:58,064 - INFO - VoiceCommandRecognizer initialized (clipboard monitoring)
+2025-06-28 16:02:58,066 - INFO - FinalVoiceChatBot initialized
+2025-06-28 16:02:58,066 - INFO - Speaking: ChatGPTアプリのウィンドウを選択し、チャット入力欄をクリックしてください。選択したら「はい」と...
+2025-06-28 16:03:07,710 - INFO - Speech completed
+2025-06-28 16:03:36,827 - INFO - New voice command detected: 🎤 チャット欄を選択完了後、音声入力②で確認します
+
+🎤 「はい」または「いいえ」と音声で答えてください
+手順:
+1. コマンドキー2回押しで音声入力を開始
+2. 音声で回答する
+3. 音声入力完了後、入力されたテキストを選択（Cmd+A）
+4. コピー（Cmd+C）
+5. 音声入力を終了（コマンドキー2回押し）
+
+2025-06-28 16:03:36,919 - INFO - Dictation already active
+2025-06-28 16:03:36,976 - INFO - Waiting for dictation completion...
+2025-06-28 16:09:25,878 - ERROR - Failed to start FinalVoiceChatBot: name 'pyaudio' is not defined
+2025-06-28 16:09:32,584 - ERROR - Failed to start FinalVoiceChatBot: name 'pyaudio' is not defined
+2025-06-28 16:11:41,082 - INFO - VoiceCommandRecognizer initialized (macOS recording + Whisper)
+2025-06-28 16:11:41,083 - INFO - FinalVoiceChatBot initialized
+2025-06-28 16:11:41,083 - INFO - Speaking: ChatGPTアプリのウィンドウを選択し、チャット入力欄をクリックしてください。選択したら「はい」と...
+2025-06-28 16:11:50,764 - INFO - Speech completed
+2025-06-28 16:12:03,054 - INFO - Dictation already active
+2025-06-28 16:12:03,109 - INFO - Waiting for dictation completion...
+2025-06-28 16:13:03,620 - WARNING - Dictation timeout

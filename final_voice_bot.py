@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Simplified Advanced Voice Chat Bot for macOS ChatGPT App
-Python 3.13対応版：音声認識の代わりにキーボード入力を使用
+Final Voice Chat Bot for macOS ChatGPT App
+最終版：音声入力②をクリップボード監視方式で実装
 """
 
 import time
@@ -10,8 +10,17 @@ import subprocess
 import logging
 import threading
 import os
+import tempfile
 from typing import Optional
 from datetime import datetime
+
+# 音声認識用のインポート
+try:
+    from faster_whisper import WhisperModel
+    VOICE_RECOGNITION_AVAILABLE = True
+except ImportError as e:
+    print(f"Warning: Voice recognition libraries not available: {e}")
+    VOICE_RECOGNITION_AVAILABLE = False
 
 # macOS用のインポート
 try:
@@ -34,73 +43,112 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-class SimpleCommandRecognizer:
-    """簡易コマンド認識（専用音声入力）"""
+class VoiceCommandRecognizer:
+    """音声入力②：macOSの録音機能を使った独立音声認識"""
     
     def __init__(self):
-        self.temp_file = "/tmp/voice_command_input.txt"
-        logger.info("SimpleCommandRecognizer initialized (dedicated voice input)")
-    
-    def wait_for_yes_command(self, timeout: int = 30) -> bool:
-        """「はい」コマンドを待機（専用音声入力）"""
-        try:
-            print("\n" + "="*50)
-            print("🎤 音声コマンド入力")
-            print("="*50)
-            print("「はい」または「いいえ」と音声で答えてください")
-            print("")
-            print("手順:")
-            print("1. コマンドキー2回押しで音声入力を開始")
-            print("2. 「はい」または「いいえ」と話す")
-            print("3. 音声入力が完了するまで待つ")
-            print("")
-            
-            # 一時ファイルを初期化
-            with open(self.temp_file, 'w', encoding='utf-8') as f:
-                f.write("")
-            
-            # TextEditで一時ファイルを開く
-            subprocess.run(['open', '-a', 'TextEdit', self.temp_file], check=False)
-            time.sleep(2)
-            
-            print("TextEditが開きました。音声入力を開始してください...")
-            print("音声入力完了後、TextEditを閉じて保存してください")
-            
-            # ユーザーがTextEditを操作するまで待機
-            input("\n音声入力と保存が完了したらEnterキーを押してください...")
-            
-            # ファイルの内容を読み取り
+        self.model = None
+        
+        if VOICE_RECOGNITION_AVAILABLE:
             try:
-                with open(self.temp_file, 'r', encoding='utf-8') as f:
-                    content = f.read().strip().lower()
-                
-                print(f"音声入力結果: '{content}'")
-                
-                # 「はい」の判定
-                yes_commands = ['はい', 'hai', 'yes', 'うん', 'そうです', 'オッケー', 'ok', 'そう']
-                result = any(yes_word in content for yes_word in yes_commands)
-                
-                print(f"判定結果: {'はい' if result else 'いいえ'}")
-                return result
-                
-            except FileNotFoundError:
-                print("❌ ファイルが見つかりません")
-                return False
+                # Whisperモデルを初期化（軽量版）
+                self.model = WhisperModel("tiny", device="cpu")
+                logger.info("Whisper model loaded successfully")
             except Exception as e:
-                logger.error(f"File reading error: {e}")
-                return False
+                logger.error(f"Failed to load Whisper model: {e}")
+                self.model = None
+        
+        logger.info("VoiceCommandRecognizer initialized (macOS recording + Whisper)")
+    
+    def record_audio_macos(self, duration: int = 3) -> str:
+        """macOSのrecコマンドで音声録音"""
+        try:
+            # 一時ファイル作成
+            temp_file = tempfile.NamedTemporaryFile(suffix=".wav", delete=False)
+            temp_file.close()
+            
+            print(f"🎤 音声録音中... ({duration}秒)")
+            print("「はい」または「いいえ」と話してください")
+            
+            # macOSのrecコマンドで録音
+            cmd = [
+                'rec', 
+                temp_file.name,
+                'trim', '0', str(duration)
+            ]
+            
+            try:
+                subprocess.run(cmd, check=True, capture_output=True)
+                return temp_file.name
+            except subprocess.CalledProcessError:
+                # recコマンドが利用できない場合
+                print("録音機能が利用できません。")
+                return None
+                
+        except Exception as e:
+            logger.error(f"macOS recording failed: {e}")
+            return None
+    
+    def _keyboard_fallback(self) -> str:
+        """音声認識失敗時のキーボード入力フォールバック"""
+        print("音声認識が利用できません。")
+        print("「はい」なら 'y'、「いいえ」なら 'n' を入力してEnterキーを押してください:")
+        user_input = input(">> ").strip().lower()
+        return "はい" if user_input in ['y', 'yes', 'はい'] else "いいえ"
+    
+    def transcribe_audio(self, audio_file: str) -> Optional[str]:
+        """音声ファイルをテキストに変換"""
+        try:
+            if not self.model or not audio_file or not os.path.exists(audio_file):
+                return None
+            
+            segments, _ = self.model.transcribe(audio_file, language="ja")
+            text = " ".join([segment.text for segment in segments])
+            
+            # 一時ファイルを削除
+            os.unlink(audio_file)
+            
+            return text.strip()
             
         except Exception as e:
+            logger.error(f"Transcription failed: {e}")
+            return None
+    
+    def wait_for_yes_command(self, timeout: int = 60) -> bool:
+        """「はい」コマンドを待機（独立音声認識）"""
+        try:
+            if not VOICE_RECOGNITION_AVAILABLE:
+                # 音声認識が利用できない場合はキーボード入力
+                result_text = self._keyboard_fallback()
+                return result_text == "はい"
+            
+            # 音声録音
+            audio_file = self.record_audio_macos(duration=3)
+            
+            if not audio_file:
+                # 録音失敗時はキーボード入力にフォールバック
+                result_text = self._keyboard_fallback()
+                return result_text == "はい"
+            
+            # 音声認識
+            text = self.transcribe_audio(audio_file)
+            
+            if text:
+                text_lower = text.lower()
+                yes_commands = ['はい', 'hai', 'yes', 'うん', 'そうです', 'オッケー', 'ok', 'そう']
+                
+                result = any(yes_word in text_lower for yes_word in yes_commands)
+                print(f"音声認識結果: '{text}' → 判定: {'はい' if result else 'いいえ'}")
+                return result
+            else:
+                print("音声認識に失敗しました")
+                result_text = self._keyboard_fallback()
+                return result_text == "はい"
+                
+        except Exception as e:
             logger.error(f"Voice command recognition error: {e}")
-            return False
-        finally:
-            # 一時ファイルを削除
-            try:
-                import os
-                if os.path.exists(self.temp_file):
-                    os.remove(self.temp_file)
-            except:
-                pass
+            result_text = self._keyboard_fallback()
+            return result_text == "はい"
 
 class ChatGPTResponseExtractor:
     """ChatGPTの回答を取得するクラス"""
@@ -125,13 +173,12 @@ class ChatGPTResponseExtractor:
     def get_response_via_clipboard(self) -> Optional[str]:
         """クリップボード経由で回答を取得"""
         try:
-            if not ACCESSIBILITY_AVAILABLE:
-                # Fallback: システムのpbpasteコマンドを使用
-                result = subprocess.run(['pbpaste'], capture_output=True, text=True)
-                content = result.stdout.strip()
-            else:
+            if ACCESSIBILITY_AVAILABLE:
                 pasteboard = NSPasteboard.generalPasteboard()
                 content = pasteboard.stringForType_(NSStringPboardType)
+            else:
+                result = subprocess.run(['pbpaste'], capture_output=True, text=True)
+                content = result.stdout.strip()
             
             if content and content != self.last_response:
                 self.last_response = content
@@ -146,11 +193,13 @@ class ChatGPTResponseExtractor:
     def wait_for_response_ready(self) -> bool:
         """回答準備完了の確認"""
         print("\nChatGPTの回答が完了したら:")
-        print("1. 回答全体を選択（Cmd+A）")
+        print("1. 回答全体を選択（Cmd+A またはマウスで選択）")
         print("2. コピー（Cmd+C）")
-        print("3. 'y' + Enter を押してください")
+        print("3. 準備完了の確認")
         
-        return SimpleCommandRecognizer().wait_for_yes_command()
+        # キーボード入力で確認
+        recognizer = VoiceCommandRecognizer()
+        return recognizer.wait_for_yes_command()
 
 class NativeDictationController:
     """macOS純正音声入力の制御"""
@@ -254,16 +303,16 @@ class NativeDictationController:
         logger.warning("Dictation timeout")
         return False
 
-class SimplifiedVoiceChatBot:
-    """簡略化されたVoice Chat Bot"""
+class FinalVoiceChatBot:
+    """最終版 Voice Chat Bot"""
     
     def __init__(self):
-        self.command_recognizer = SimpleCommandRecognizer()
+        self.voice_commands = VoiceCommandRecognizer()
         self.response_extractor = ChatGPTResponseExtractor()
         self.dictation_controller = NativeDictationController()
         self.is_running = False
         
-        logger.info("SimplifiedVoiceChatBot initialized")
+        logger.info("FinalVoiceChatBot initialized")
     
     def speak_text(self, text: str) -> None:
         """テキストを読み上げ"""
@@ -280,18 +329,32 @@ class SimplifiedVoiceChatBot:
         print("VoiceChatBot セットアップ")
         print("="*60)
         
-        # 音声での指示
+        # 音声での指示（音声入力②は使わない）
         setup_message = (
             "ChatGPTアプリのウィンドウを選択し、"
             "チャット入力欄をクリックしてください。"
+            "選択したら「はい」と答えてください。"
         )
         
         print(f"指示: {setup_message}")
         self.speak_text(setup_message)
         
-        # 準備完了の確認
-        print("\n準備ができましたか？")
-        return self.command_recognizer.wait_for_yes_command()
+        # ここで音声入力②で「はい」を待機
+        print("\n🎤 チャット欄を選択完了後、音声入力②で確認します")
+        return self.voice_commands.wait_for_yes_command()
+    
+    def start_main_dictation_after_setup(self) -> bool:
+        """セットアップ完了後に音声入力①を起動"""
+        print("\n✅ セットアップ完了！")
+        print("🎤 質問用の音声入力①を開始します...")
+        
+        # 音声入力①（純正）を起動
+        if self.dictation_controller.start_dictation():
+            print("✅ 音声入力①が開始されました")
+            return True
+        else:
+            print("❌ 音声入力①の開始に失敗しました")
+            return False
     
     def chat_cycle(self) -> bool:
         """1回のチャットサイクル"""
@@ -299,15 +362,18 @@ class SimplifiedVoiceChatBot:
             print("\n" + "-"*50)
             print("新しい質問を受付中...")
             
-            # 1. 音声入力①（純正）を開始
-            print("🎤 音声入力を開始します...")
-            if not self.dictation_controller.start_dictation():
-                print("❌ 音声入力の開始に失敗しました")
-                print("手動でコマンドキー2回押しで音声入力を開始してください")
+            # 1. 音声入力①の状態をチェック・必要に応じて起動
+            if not self.dictation_controller.check_dictation_status():
+                print("🎤 音声入力①を再起動します...")
+                if not self.dictation_controller.start_dictation():
+                    print("❌ 音声入力①の開始に失敗しました")
+                    return False
+            else:
+                print("🎤 音声入力①は既にアクティブです")
             
             print("音声で質問を話してください（終了したら自動的に送信されます）")
             
-            # 2. 音声入力の完了を待機
+            # 2. 音声入力の完了を待機（Enter押下で送信される）
             if self.dictation_controller.wait_for_dictation_completion():
                 print("✅ 質問が送信されました")
             else:
@@ -350,7 +416,19 @@ class SimplifiedVoiceChatBot:
         print(f"\n{continue_message}")
         self.speak_text(continue_message)
         
-        return self.command_recognizer.wait_for_yes_command()
+        # 音声入力②で継続確認
+        will_continue = self.voice_commands.wait_for_yes_command()
+        
+        if will_continue:
+            print("🔄 次の質問に進みます")
+            # 音声入力①が無効になっている場合は起動
+            if not self.dictation_controller.check_dictation_status():
+                print("🎤 音声入力①を起動しています...")
+                self.dictation_controller.start_dictation()
+        else:
+            print("🛑 チャットを終了します")
+        
+        return will_continue
     
     def main_loop(self) -> None:
         """メインループ"""
@@ -358,6 +436,11 @@ class SimplifiedVoiceChatBot:
             # セットアップフェーズ
             if not self.setup_phase():
                 print("セットアップがキャンセルされました。終了します。")
+                return
+            
+            # セットアップ完了後に音声入力①を起動
+            if not self.start_main_dictation_after_setup():
+                print("音声入力①の開始に失敗しました。終了します。")
                 return
             
             self.is_running = True
@@ -375,9 +458,10 @@ class SimplifiedVoiceChatBot:
                         break
                 else:
                     print("❌ エラーが発生しました")
-                    print("再試行しますか？")
+                    retry_message = "再試行しますか？"
+                    self.speak_text(retry_message)
                     
-                    if not self.command_recognizer.wait_for_yes_command():
+                    if not self.voice_commands.wait_for_yes_command():
                         break
         
         except KeyboardInterrupt:
@@ -391,31 +475,39 @@ class SimplifiedVoiceChatBot:
         """クリーンアップ"""
         self.is_running = False
         self.dictation_controller.stop_dictation()
-        logger.info("SimplifiedVoiceChatBot stopped")
+        logger.info("FinalVoiceChatBot stopped")
 
 def main():
     """メイン関数"""
-    print("Simplified Advanced VoiceChatBot for macOS ChatGPT")
-    print("==================================================")
+    print("Final VoiceChatBot for macOS ChatGPT")
+    print("====================================")
     print("機能:")
     print("- 音声入力①: macOS純正（ChatGPT入力用）")
-    print("- 音声入力②: macOS純正＋TextEdit（制御用）") 
-    print("- クリップボード: ChatGPT回答取得")
+    print("- 音声入力②: 独立音声認識システム（制御用）") 
+    print("- 自動読み上げ: ChatGPT回答の音声出力")
     print("")
     
-    print("使用方法:")
-    print("1. ChatGPTアプリを起動してチャット画面を開く")
-    print("2. このプログラムの指示に従って操作")
-    print("3. 音声で質問、音声で制御、手動で回答をコピー")
+    print("ワークフロー:")
+    print("1. ChatGPTウィンドウ選択 → チャット欄クリック")
+    print("2. 音声②で「はい」と確認 → 音声①自動起動")
+    print("3. 音声①でChatGPTに質問 → Enter監視で送信検出")
+    print("4. 手動で回答をコピー → 音声②で「はい」と確認")
+    print("5. 自動読み上げ → 音声②で継続確認")
+    print("")
+    
+    print("重要なポイント:")
+    print("- 音声①: macOS純正音声入力（コマンド2回）")
+    print("- 音声②: Whisper音声認識（独立システム）")
+    print("- 2つの音声システムが独立して動作")
     print("")
     
     input("準備完了後、Enterキーを押してください...")
     
     try:
-        bot = SimplifiedVoiceChatBot()
+        bot = FinalVoiceChatBot()
         bot.main_loop()
     except Exception as e:
-        logger.error(f"Failed to start SimplifiedVoiceChatBot: {e}")
+        logger.error(f"Failed to start FinalVoiceChatBot: {e}")
         print(f"エラーが発生しました: {e}")
 
 if __name__ == "__main__":
