@@ -626,12 +626,29 @@ class VoiceBot:
                 adjusted_loc = type(loc)(
                     left=int(loc.left / 2),
                     top=int(loc.top / 2),
+                    width=int(loc.width / 2),
+                    height=int(loc.height / 2)
                 )
                 adjusted_locations.append(adjusted_loc)
 
             locations = adjusted_locations
             
-            print(f"🔍 最終検索結果: {len(locations)}個のボタンを発見")
+            # top=860未満のボタンを選択（画面上部のボタン）
+            filtered_locations = []
+            for loc in locations:
+                if loc.top < 860:
+                    filtered_locations.append(loc)
+                else:
+                    print(f"🚫 除外: top={loc.top} (860以上のため除外)")
+            
+            locations = filtered_locations
+            
+            if not locations:
+                print(f"❌ フィルタリング後、有効なボタンが見つかりませんでした")
+                print("💡 top=860未満のボタンがありません")
+                return False
+            
+            print(f"🔍 最終検索結果: {len(locations)}個のボタンを発見（フィルタリング後）")
             for i, loc in enumerate(locations):
                 print(f"  ボタン{i+1}: left={loc.left}, top={loc.top}, width={loc.width}, height={loc.height}")
             
