@@ -332,6 +332,10 @@ class VoiceBot:
                     if self.wait_for_voice_confirmation("続けるには「はい」と答えてください"):
                         print("✅ 「はい」を検知 - 最初のステップに戻ります")
                         
+                        # 念のためマイクを確実に停止
+                        print("🛑 マイクを確実に停止しています...")
+                        self.stop_dictation()
+                        
                         # 最初のステップに戻る
                         print("\n🔄 次の音声入力に戻ります...")
                         time.sleep(2)  # 少し待機
