@@ -287,20 +287,28 @@ class VoiceBot:
             return False
     
     def press_enter(self) -> bool:
-        """Enterキーを押す"""
+        """Enterキーを押す（sample.py参考）"""
         if not QUARTZ_AVAILABLE:
             print("💡 手動でEnterキーを押してください")
             return False
         
         try:
-            ENTER_KEY = 36
+            ENTER_KEY = 36  # Return / Enter（メインキー）
             
-            event = CGEventCreateKeyboardEvent(None, ENTER_KEY, True)
-            CGEventPost(kCGHIDEventTap, event)
-            time.sleep(0.05)
-            event = CGEventCreateKeyboardEvent(None, ENTER_KEY, False)
-            CGEventPost(kCGHIDEventTap, event)
+            # keyDown
+            CGEventPost(
+                kCGHIDEventTap,
+                CGEventCreateKeyboardEvent(None, ENTER_KEY, True)
+            )
+            time.sleep(0.05)  # 押しっぱなし時間
             
+            # keyUp
+            CGEventPost(
+                kCGHIDEventTap,
+                CGEventCreateKeyboardEvent(None, ENTER_KEY, False)
+            )
+            
+            print("✅ Enterキーを送信しました")
             return True
             
         except Exception as e:
@@ -518,20 +526,25 @@ class VoiceBot:
             user_choice = self.wait_for_enter_or_escape()
             
             if user_choice == "enter":
-                print("\n【選択1】「はい」選択 -> スクリーンショット撮影済み")
+                print("\n【選択1】「はい」選択 -> Enterキーを押してスクリーンショット撮影")
                 
-                # ユーザーが「はい」と言ってスクリーンショットが撮影されている
-                time.sleep(2)  # スクリーンショット保存待機
-                
-                # 最新のスクリーンショットを取得
-                screenshot_path = self.get_latest_screenshot()
-                if screenshot_path:
-                    # スクリーンショットを読み上げ
-                    screenshot_text = self.read_screenshot_with_vision(screenshot_path)
-                    self.speak_text(f"スクリーンショットの内容: {screenshot_text}")
-                    return True
+                # 「はい」と言われたので、Enterキーを押してスクリーンショット撮影
+                if self.press_enter():
+                    print("📸 スクリーンショット撮影を実行しました")
+                    time.sleep(2)  # スクリーンショット保存待機
+                    
+                    # 最新のスクリーンショットを取得
+                    screenshot_path = self.get_latest_screenshot()
+                    if screenshot_path:
+                        # スクリーンショットを読み上げ
+                        screenshot_text = self.read_screenshot_with_vision(screenshot_path)
+                        self.speak_text(f"スクリーンショットの内容: {screenshot_text}")
+                        return True
+                    else:
+                        print("❌ スクリーンショットが見つかりませんでした")
+                        return False
                 else:
-                    print("❌ スクリーンショットが見つかりませんでした")
+                    print("❌ Enterキーの送信に失敗しました")
                     return False
                 
             elif user_choice == "escape":

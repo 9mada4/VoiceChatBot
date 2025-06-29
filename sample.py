@@ -1,33 +1,29 @@
-import time, Quartz
-
-CMD   = 55   # ⌘
-CTRL  = 59   # ^
-SHIFT = 56   # ⇧
-KEY_5 = 23   # 5
-
-FLAGS = (
-    Quartz.kCGEventFlagMaskCommand |
-    Quartz.kCGEventFlagMaskShift   |
-    Quartz.kCGEventFlagMaskControl
+import time
+from Quartz.CoreGraphics import (
+    CGEventCreateKeyboardEvent,
+    CGEventPost,
+    kCGHIDEventTap
 )
 
-def post(key, down, flags=0):
-    evt = Quartz.CGEventCreateKeyboardEvent(None, key, down)
-    if flags:
-        Quartz.CGEventSetFlags(evt, flags)
-    Quartz.CGEventPost(Quartz.kCGHIDEventTap, evt)
+# ── キーコード定義 ──────────────────────────
+ENTER_KEY = 36   # Return / Enter（メインキー）
+# ENTER_KEY = 76   # ← テンキー Enter を使いたい場合はこちら
 
-time.sleep(2)                       # 画面切り替え猶予
-# 1) 修飾キーを押しっぱなし
-for k in (CTRL, SHIFT, CMD):
-    post(k, True)
+def press_enter():
+    """Return / Enter キーを 1 回押下"""
+    # keyDown
+    CGEventPost(
+        kCGHIDEventTap,
+        CGEventCreateKeyboardEvent(None, ENTER_KEY, True)
+    )
+    time.sleep(0.05)  # 押しっぱなし時間
+    # keyUp
+    CGEventPost(
+        kCGHIDEventTap,
+        CGEventCreateKeyboardEvent(None, ENTER_KEY, False)
+    )
 
-time.sleep(0.05)                    # ほんの僅か待機でも可
-# 2) 5 keyDown 〈修飾フラグ付き〉
-post(KEY_5, True,  FLAGS)
-# 3) 5 keyUp   〈修飾フラグ付き〉
-post(KEY_5, False, FLAGS)
-
-# 4) 修飾キーを離す
-for k in (CMD, SHIFT, CTRL):
-    post(k, False)
+# 実行（アクセシビリティ許可を付与しておくこと）
+time.sleep(4)   # アプリ切り替え猶予
+press_enter()
+print("Enter キーを送信しました")
