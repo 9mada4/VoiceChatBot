@@ -454,65 +454,21 @@ class VoiceBot:
                 logger.error(f"Failed to wait for voice confirmation: {e}")
                 return False
     
-    def scroll_screen(self, scroll_amount: int = 3) -> bool:
-        """画面中央で2回に分けて少しずつスクロール"""
-        if not QUARTZ_AVAILABLE:
-            print("💡 手動でスクロールしてください")
-            return False
-        
+    def scroll_screen(self) -> bool:
+        """PyAutoGUIで一気に大きくスクロール"""
         try:
-            # 画面の中央位置を計算
-            from Quartz import CGDisplayBounds, CGMainDisplayID
+            try:
+                import pyautogui
+            except ImportError:
+                print("❌ PyAutoGUIが利用できません。手動でスクロールしてください")
+                return False
             
-            display_bounds = CGDisplayBounds(CGMainDisplayID())
-            screen_width = int(display_bounds.size.width)
-            screen_height = int(display_bounds.size.height)
+            print("📜 PyAutoGUIで一気に大きくスクロール中...")
             
-            # 画面中央の座標
-            center_x = int(screen_width * 0.5)
-            center_y = int(screen_height * 0.5)
+            # 一気に大きくスクロール（下方向）
+            pyautogui.scroll(-10000)  # 一気に大きくスクロール
             
-            print(f"📜 画面中央で2回スクロール中... (位置: {center_x}, {center_y})")
-            
-            # スクロールイベントを作成
-            from Quartz.CoreGraphics import CGEventCreateScrollWheelEvent, CGEventPost, kCGScrollEventUnitPixel
-            from Quartz.CoreGraphics import CGEventSetLocation
-            from Foundation import NSPoint
-            
-            # 1回目のスクロール（少し下方向）
-            scroll_event1 = CGEventCreateScrollWheelEvent(
-                None,  # source
-                kCGScrollEventUnitPixel,  # units
-                1,     # wheelCount (垂直スクロールのみ)
-                -scroll_amount  # deltaAxis1 (負の値で下スクロール、少しだけ)
-            )
-            
-            # マウス位置を設定
-            CGEventSetLocation(scroll_event1, NSPoint(center_x, center_y))
-            
-            # 1回目のイベントを送信
-            CGEventPost(kCGHIDEventTap, scroll_event1)
-            print("✅ 1回目のスクロール完了")
-            
-            # 0.5秒待機
-            time.sleep(0.5)
-            
-            # 2回目のスクロール（少し下方向）
-            scroll_event2 = CGEventCreateScrollWheelEvent(
-                None,  # source
-                kCGScrollEventUnitPixel,  # units
-                1,     # wheelCount (垂直スクロールのみ)
-                -scroll_amount  # deltaAxis1 (負の値で下スクロール、少しだけ)
-            )
-            
-            # マウス位置を設定
-            CGEventSetLocation(scroll_event2, NSPoint(center_x, center_y))
-            
-            # 2回目のイベントを送信
-            CGEventPost(kCGHIDEventTap, scroll_event2)
-            print("✅ 2回目のスクロール完了")
-
-            print("✅ 画面スクロール完了（2回実行）")
+            print("✅ 画面スクロール完了")
             return True
             
         except Exception as e:
