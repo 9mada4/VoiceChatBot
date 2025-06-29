@@ -89,8 +89,6 @@ class VoiceBot:
             temp_file = tempfile.NamedTemporaryFile(suffix=".wav", delete=False)
             temp_file.close()
             
-            print("🎤 録音中です")
-            
             cmd = ['rec', temp_file.name, 'trim', '0', str(duration)]
             
             try:
@@ -417,8 +415,6 @@ class VoiceBot:
             try:
                 temp_file = tempfile.NamedTemporaryFile(suffix=".wav", delete=False)
                 temp_file.close()
-                
-                print("🎤 録音中です")
                 
                 cmd = ['rec', temp_file.name, 'trim', '0', '5']
                 try:
