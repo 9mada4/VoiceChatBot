@@ -624,7 +624,7 @@ class VoiceBot:
                 # 「はい」と言われたので、Enterキーを押してスクリーンショット撮影
                 if self.press_enter():
                     print("📸 スクリーンショット撮影を実行しました")
-                    time.sleep(2)  # スクリーンショット保存待機
+                    time.sleep(10)  # スクリーンショット保存待機
                     
                     # 最新のスクリーンショットを取得
                     screenshot_path = self.get_latest_screenshot()
@@ -652,7 +652,7 @@ class VoiceBot:
                     time.sleep(2)
                     
                     if self.monitor_keyboard_shortcut():
-                        time.sleep(2)  # スクリーンショット保存待機
+                        time.sleep(10)  # スクリーンショット保存待機
                         
                         # 最新のスクリーンショットを取得
                         screenshot_path = self.get_latest_screenshot()
