@@ -333,25 +333,30 @@ class VoiceBot:
             return False
     
     def get_latest_screenshot(self) -> Optional[str]:
-        """デスクトップから最新のスクリーンショットを取得"""
+        """~/Pictures/Screenshotから最新のスクリーンショットを取得"""
         try:
-            desktop_path = os.path.expanduser("~/Desktop")
+            screenshot_dir = os.path.expanduser("~/Pictures/Screenshot")
+            
+            if not os.path.exists(screenshot_dir):
+                print(f"❌ スクリーンショットディレクトリが見つかりません: {screenshot_dir}")
+                return None
+            
             screenshot_patterns = [
-                "Screenshot*.png",
-                "スクリーンショット*.png",
-                "Screen Shot*.png"
+                "*.png",
+                "*.jpg",
+                "*.jpeg"
             ]
             
             all_screenshots = []
             for pattern in screenshot_patterns:
-                files = glob.glob(os.path.join(desktop_path, pattern))
+                files = glob.glob(os.path.join(screenshot_dir, pattern))
                 all_screenshots.extend(files)
             
             if not all_screenshots:
-                print("❌ スクリーンショットが見つかりません")
+                print(f"❌ {screenshot_dir} にスクリーンショットが見つかりません")
                 return None
             
-            # 最新のファイルを取得
+            # 最新のファイルを取得（作成時間順）
             latest_screenshot = max(all_screenshots, key=os.path.getctime)
             print(f"📸 最新のスクリーンショット: {os.path.basename(latest_screenshot)}")
             return latest_screenshot
@@ -754,6 +759,16 @@ def test_screenshot_function():
     
     bot = VoiceBot()
     
+    # 既存のスクリーンショット確認
+    print("\n=== ~/Pictures/Screenshot 確認 ===")
+    existing_screenshot = bot.get_latest_screenshot()
+    if existing_screenshot:
+        print(f"✅ 既存のスクリーンショットが見つかりました: {existing_screenshot}")
+    else:
+        print("❌ 既存のスクリーンショットが見つかりませんでした")
+    
+    # スクリーンショット機能のテスト
+    print("\n=== スクリーンショット撮影テスト ===")
     print("Cmd+Shift+Ctrl+5を実行します...")
     result = bot.take_screenshot_shortcut()
     
