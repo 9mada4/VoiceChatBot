@@ -233,8 +233,6 @@ class VoiceBot:
                 if audio_file:
                     text = self.transcribe_audio(audio_file)
                     if text:
-                        print(f"🎧 監視中の音声: '{text}'")
-                        
                         # 「音声入力終了」を検知
                         if '音声入力終わり' in text or '終わり' in text:
                             print("🎯 音声入力終わりを検知！")
