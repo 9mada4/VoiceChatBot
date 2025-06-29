@@ -293,7 +293,7 @@ class VoiceBot:
             return False
         
         try:
-            ENTER_KEY = 76
+            ENTER_KEY = 36
             
             event = CGEventCreateKeyboardEvent(None, ENTER_KEY, True)
             CGEventPost(kCGHIDEventTap, event)
@@ -480,7 +480,7 @@ class VoiceBot:
         
         try:
             CMD_KEY = 55     # Left Command
-            ENTER_KEY = 76   # Enter
+            ENTER_KEY = 36   # Enter
             
             print("📤 Cmd+Enterで送信中...")
             
