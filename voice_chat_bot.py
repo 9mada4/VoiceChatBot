@@ -484,22 +484,66 @@ class VoiceBot:
             return False
     
     def capture_active_window(self) -> Optional[str]:
-        """アクティブウィンドウをキャプチャしてscreenshot.pngに保存"""
+        """インタラクティブなウィンドウ選択でスクリーンショットを取得"""
         try:
             # スクリプトのディレクトリにscreenshot.pngで保存
             script_dir = os.path.dirname(os.path.abspath(__file__))
             screenshot_path = os.path.join(script_dir, "screenshot.png")
 
-            print("📸 画面をキャプチャ中...")
+            print("📸 インタラクティブスクリーンショットを開始...")
+            print("💡 ウィンドウを選択してください。自動でエンターキーを送信します")
 
-            # screencaptureコマンドで画面全体をキャプチャ（-xで無音、-oで影なし）
+            # screencapture -iW -o でインタラクティブなウィンドウ選択
+            # -i: インタラクティブモード, -W: ウィンドウモード, -o: 音なし
+            cmd = ['screencapture', '-iW', '-o', screenshot_path]
+            
+            # バックグラウンドでscreencaptureを起動
+            process = subprocess.Popen(cmd)
+            
+            # ユーザーがウィンドウを選択する時間を待機
+            time.sleep(2.0)  # 2秒待機してからエンターキーを送信
+            
+            # エンターキーを自動送信
+            if self.press_enter():
+                print("✅ エンターキーを送信しました")
+            else:
+                print("⚠️ エンターキー送信に失敗しましたが、処理を続行します")
+            
+            # プロセスの完了を待機
+            try:
+                process.wait(timeout=10)
+                
+                if process.returncode == 0:
+                    if os.path.exists(screenshot_path):
+                        print(f"✅ インタラクティブスクリーンショット完了: {screenshot_path}")
+                        return screenshot_path
+                    else:
+                        print("❌ スクリーンショットファイルが作成されませんでした")
+                        return None
+                else:
+                    print(f"❌ screencaptureエラー（戻り値: {process.returncode}）")
+                    return self._capture_screen_fallback(screenshot_path)
+                    
+            except subprocess.TimeoutExpired:
+                print("❌ screencapture処理がタイムアウトしました")
+                process.terminate()
+                return self._capture_screen_fallback(screenshot_path)
+
+        except Exception as e:
+            logger.error(f"Failed to capture with interactive mode: {e}")
+            return self._capture_screen_fallback(screenshot_path)
+    
+    def _capture_screen_fallback(self, screenshot_path: str) -> Optional[str]:
+        """フォールバック: 画面全体をキャプチャ"""
+        try:
+            print("📸 画面全体をキャプチャ中...")
             cmd = ['screencapture', '-x', '-o', screenshot_path]
-
+            
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=10)
-
+            
             if result.returncode == 0:
                 if os.path.exists(screenshot_path):
-                    print(f"✅ スクリーンショット保存完了: {screenshot_path}")
+                    print(f"✅ 画面全体キャプチャ完了: {screenshot_path}")
                     return screenshot_path
                 else:
                     print("❌ スクリーンショットファイルが作成されませんでした")
@@ -507,12 +551,9 @@ class VoiceBot:
             else:
                 print(f"❌ screencaptureコマンドエラー: {result.stderr}")
                 return None
-
-        except subprocess.TimeoutExpired:
-            print("❌ スクリーンショット撮影がタイムアウトしました")
-            return None
+                
         except Exception as e:
-            logger.error(f"Failed to capture active window: {e}")
+            logger.error(f"Fallback capture failed: {e}")
             return None
     
     def wait_for_voice_confirmation(self, message: str) -> bool:
@@ -590,17 +631,17 @@ def main():
 
 def test_screenshot_function():
     """スクリーンショット機能のテスト用関数"""
-    print("アクティブウィンドウキャプチャ機能のテストを開始します...")
+    print("インタラクティブスクリーンショット機能のテストを開始します...")
     
     bot = VoiceBot()
     
-    # アクティブウィンドウキャプチャのテスト
-    print("\n=== アクティブウィンドウキャプチャテスト ===")
-    print("アクティブウィンドウをキャプチャします...")
+    # インタラクティブスクリーンショットのテスト
+    print("\n=== インタラクティブスクリーンショットテスト ===")
+    print("ウィンドウ選択式スクリーンショットを実行します...")
     screenshot_path = bot.capture_active_window()
     
     if screenshot_path:
-        print(f"✅ アクティブウィンドウキャプチャ成功: {screenshot_path}")
+        print(f"✅ インタラクティブスクリーンショット成功: {screenshot_path}")
         
         # OCRテスト
         if os.path.exists(screenshot_path):
@@ -610,7 +651,7 @@ def test_screenshot_function():
         else:
             print("❌ スクリーンショットファイルが見つかりません")
     else:
-        print("❌ アクティブウィンドウキャプチャ失敗")
+        print("❌ インタラクティブスクリーンショット失敗")
 
 if __name__ == "__main__":
     import sys
