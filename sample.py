@@ -1,29 +1,23 @@
-import time
-from Quartz.CoreGraphics import (
-    CGEventCreateKeyboardEvent,
-    CGEventPost,
-    kCGHIDEventTap
-)
+import pytesseract
+from PIL import Image
+import subprocess
 
-# ── キーコード定義 ──────────────────────────
-ENTER_KEY = 36   # Return / Enter（メインキー）
-# ENTER_KEY = 76   # ← テンキー Enter を使いたい場合はこちら
+# OCRの言語を日本語に指定
+def extract_japanese_text(image_path):
+    return pytesseract.image_to_string(Image.open(image_path), lang='jpn')
 
-def press_enter():
-    """Return / Enter キーを 1 回押下"""
-    # keyDown
-    CGEventPost(
-        kCGHIDEventTap,
-        CGEventCreateKeyboardEvent(None, ENTER_KEY, True)
-    )
-    time.sleep(0.05)  # 押しっぱなし時間
-    # keyUp
-    CGEventPost(
-        kCGHIDEventTap,
-        CGEventCreateKeyboardEvent(None, ENTER_KEY, False)
-    )
+# macOSのsayコマンドで読み上げ
+def speak_japanese(text):
+    subprocess.run(['say', '-v', 'Kyoko', text])
 
-# 実行（アクセシビリティ許可を付与しておくこと）
-time.sleep(4)   # アプリ切り替え猶予
-press_enter()
-print("Enter キーを送信しました")
+# メイン処理
+image_path = 'example.png'  # ← 日本語が写った画像
+text = extract_japanese_text(image_path)
+
+print("抽出されたテキスト：")
+print(text)
+
+if text.strip():
+    speak_japanese(text)
+else:
+    print("❌ テキストが検出されませんでした")
