@@ -329,7 +329,7 @@ class VoiceBot:
                     
                     # ボタンクリック後に「はい」を待機
                     print("\n【ステップ11】ボタンクリック後の確認")
-                    if self.wait_for_voice_confirmation("ボタンをクリックしました。続けるには「はい」と答えてください"):
+                    if self.wait_for_voice_confirmation("続けるには「はい」と答えてください"):
                         print("✅ 「はい」を検知 - 最初のステップに戻ります")
                         
                         # 最初のステップに戻る
