@@ -435,25 +435,25 @@ class VoiceBot:
                 logger.error(f"Failed to wait for voice confirmation: {e}")
                 return False
     
-    def scroll_right_side(self, scroll_amount: int = 5) -> bool:
-        """画面右側でスクロール"""
+    def scroll_screen(self, scroll_amount: int = 5) -> bool:
+        """画面全体でスクロール"""
         if not QUARTZ_AVAILABLE:
             print("💡 手動でスクロールしてください")
             return False
         
         try:
-            # 画面の右側の位置を計算（画面幅の75%あたり）
+            # 画面の中央位置を計算
             from Quartz import CGDisplayBounds, CGMainDisplayID
             
             display_bounds = CGDisplayBounds(CGMainDisplayID())
             screen_width = int(display_bounds.size.width)
             screen_height = int(display_bounds.size.height)
             
-            # 画面右側の座標（画面幅の75%、高さの50%）
-            right_x = int(screen_width * 0.75)
+            # 画面中央の座標
+            center_x = int(screen_width * 0.5)
             center_y = int(screen_height * 0.5)
             
-            print(f"📜 画面右側でスクロール中... (位置: {right_x}, {center_y})")
+            print(f"📜 画面全体でスクロール中... (位置: {center_x}, {center_y})")
             
             # スクロールイベントを作成
             from Quartz.CoreGraphics import CGEventCreateScrollWheelEvent, CGEventPost, kCGScrollEventUnitPixel
@@ -469,16 +469,16 @@ class VoiceBot:
             # マウス位置を設定
             from Quartz.CoreGraphics import CGEventSetLocation
             from Foundation import NSPoint
-            CGEventSetLocation(scroll_event, NSPoint(right_x, center_y))
+            CGEventSetLocation(scroll_event, NSPoint(center_x, center_y))
             
             # イベントを送信
             CGEventPost(kCGHIDEventTap, scroll_event)
             
-            print("✅ 右側スクロール完了")
+            print("✅ 画面スクロール完了")
             return True
             
         except Exception as e:
-            logger.error(f"Failed to scroll on right side: {e}")
+            logger.error(f"Failed to scroll screen: {e}")
             return False
     
     def click_at_position(self, x: int, y: int) -> bool:
@@ -596,7 +596,7 @@ class VoiceBot:
             return False
     
     def find_and_click_image_simple(self, button_image: str = "startVoiceBtn.png") -> bool:
-        """PyAutoGUIを使用したシンプルな画像検索・クリック"""
+        """PyAutoGUIを使用したシンプルな画像検索・クリック（複数ボタン対応・座標補正廃止）"""
         try:
             try:
                 import pyautogui
@@ -604,7 +604,7 @@ class VoiceBot:
                 print("❌ PyAutoGUIが利用できません。pip install pyautoguiでインストールしてください")
                 return False
             
-            print(f"🔍 PyAutoGUIで{button_image}を検索中...")
+            print(f"🔍 PyAutoGUIで{button_image}を全画面検索中...")
             
             # スクリプトディレクトリからボタン画像のパスを取得
             script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -621,10 +621,12 @@ class VoiceBot:
             screenshot = pyautogui.screenshot()
             print(f"🔍 スクリーンショットサイズ: {screenshot.size}")
             
-            # 画像を画面上で検索
+            # 画像を画面上で検索（全て検索）
             try:
-                location = pyautogui.locateOnScreen(button_path, confidence=0.4)
-                print(f"🔍 検索結果: {location}")
+                locations = list(pyautogui.locateAllOnScreen(button_path, confidence=0.4))
+                print(f"🔍 検索結果: {len(locations)}個のボタンを発見")
+                for i, loc in enumerate(locations):
+                    print(f"  ボタン{i+1}: {loc}")
             except pyautogui.ImageNotFoundException:
                 print(f"❌ {button_image} が見つかりませんでした")
                 return False
@@ -632,20 +634,22 @@ class VoiceBot:
                 print(f"❌ 画像検索エラー: {search_error}")
                 return False
             
-            if location:
+            if locations:
+                # 複数のボタンがある場合は最下部（y座標が最大）のボタンを選択
+                if len(locations) > 1:
+                    bottom_location = max(locations, key=lambda loc: loc.top)
+                    print(f"🎯 複数ボタンあり - 最下部ボタンを選択: {bottom_location}")
+                else:
+                    bottom_location = locations[0]
+                    print(f"🎯 ボタンを発見: {bottom_location}")
+                
                 # 見つかった位置の中心を取得
-                center = pyautogui.center(location)
-                print(f"🎯 ボタンを発見: {location}, 中心: {center}")
+                center = pyautogui.center(bottom_location)
+                print(f"🖱️ クリック座標: {center}")
                 
-                # Retina等の高DPI環境対応: 座標を1/2に補正
-                corrected_x = center.x // 2
-                corrected_y = center.y // 2
-                
-                print(f"🖱️ 座標補正: 元({center.x}, {center.y}) → 補正後({corrected_x}, {corrected_y})")
-                
-                # 補正後の座標でクリック
-                pyautogui.click(corrected_x, corrected_y)
-                print(f"✅ {button_image} のクリック完了")
+                # 座標補正なしで直接クリック
+                pyautogui.click(center.x, center.y)
+                print(f"✅ {button_image} のクリック完了（座標補正なし）")
                 return True
             else:
                 print(f"❌ {button_image} が見つかりませんでした")
@@ -700,13 +704,13 @@ def test_scroll_click_function():
     
     bot = VoiceBot()
     
-    # スクロールテスト
-    print("\n=== 右側スクロールテスト ===")
-    print("画面右側でスクロールします...")
-    if bot.scroll_right_side():
-        print("✅ 右側スクロールテスト成功")
+    # スクロールテスト（全画面対応）
+    print("\n=== 全画面スクロールテスト ===")
+    print("画面全体でスクロールします...")
+    if bot.scroll_screen():
+        print("✅ 全画面スクロールテスト成功")
     else:
-        print("❌ 右側スクロールテスト失敗")
+        print("❌ 全画面スクロールテスト失敗")
     
     time.sleep(2)  # 2秒待機
     
