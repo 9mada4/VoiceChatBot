@@ -416,7 +416,10 @@ class VoiceBot:
                 if screenshot_path:
                     # OCRでテキストを読み取り
                     screenshot_text = self.read_screenshot_with_vision(screenshot_path)
-                    self.speak_text(f"スクリーンショットの内容: {screenshot_text}")
+                    
+                    # ファイル名部分を除去して内容のみを抽出
+                    content_only = self.extract_content_from_ocr_result(screenshot_text)
+                    self.speak_text(content_only)
                     return True
                 else:
                     print("❌ ウィンドウキャプチャに失敗しました - 実行終了")
@@ -506,6 +509,10 @@ class VoiceBot:
             # エンターキーを自動送信
             if self.press_enter():
                 print("✅ エンターキーを送信しました")
+                
+                # ファイル保存のタイムラグを考慮してエンター後2秒待機
+                print("💾 ファイル保存を待機中...")
+                time.sleep(2.0)
             else:
                 print("⚠️ エンターキー送信に失敗しましたが、処理を続行します")
             
@@ -608,6 +615,31 @@ class VoiceBot:
             except Exception as e:
                 logger.error(f"Failed to wait for voice confirmation: {e}")
                 return False
+    
+    def extract_content_from_ocr_result(self, ocr_result: str) -> str:
+        """OCR結果からファイル名部分を除去して内容のみを抽出"""
+        try:
+            # OCR結果の形式: "スクリーンショット screenshot.png から以下のテキストを認識しました:\n\n{実際の内容}"
+            # または: "スクリーンショット screenshot.png から以下のテキストを認識しました（フォールバック）:\n\n{実際の内容}"
+            
+            # ":\n\n" または ")::\n\n" の後の部分を抽出
+            patterns = [
+                "から以下のテキストを認識しました:\n\n",
+                "から以下のテキストを認識しました（フォールバック）:\n\n"
+            ]
+            
+            for pattern in patterns:
+                if pattern in ocr_result:
+                    content = ocr_result.split(pattern, 1)[-1].strip()
+                    if content:
+                        return content
+            
+            # パターンにマッチしない場合は、元のテキストをそのまま返す
+            return ocr_result.strip()
+            
+        except Exception as e:
+            logger.error(f"Failed to extract content from OCR result: {e}")
+            return ocr_result
 
 def main():
     """メイン関数"""
