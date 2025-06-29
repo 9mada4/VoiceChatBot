@@ -329,8 +329,20 @@ class VoiceBot:
                 # ボタン検索・クリック実行
                 print("\n【ステップ10】ボタン検索・クリック")
                 if self.find_and_click_image_simple("startVoiceBtn.png"):
-                    print("✅ ボタンクリック完了 - 全処理完了しました")
-                    return True
+                    print("✅ ボタンクリック完了")
+                    
+                    # ボタンクリック後に「はい」を待機
+                    print("\n【ステップ11】ボタンクリック後の確認")
+                    if self.wait_for_voice_confirmation("ボタンをクリックしました。続けるには「はい」と答えてください"):
+                        print("✅ 「はい」を検知 - 最初のステップに戻ります")
+                        
+                        # 最初のステップに戻る
+                        print("\n🔄 次の音声入力に戻ります...")
+                        time.sleep(2)  # 少し待機
+                        return self.run_requirements_1_to_3()  # 最初から再開
+                    else:
+                        print("❌ 音声確認がキャンセルされました - 処理を終了します")
+                        return False
                 else:
                     print("❌ ボタンクリック失敗")
                     return False
@@ -645,16 +657,22 @@ def main():
     print("3. 自動送信")
     print("4. ChatGPT出力確認（音声制御）")
     print("5. 画面スクロール・ボタン検索・クリック")
+    print("6. ボタンクリック後の確認（音声制御）")
+    print("7. 🔄 ステップ1に戻って無限ループ")
     print("※全て音声で操作します（ひらがな・漢字・カタカナ対応）")
+    print("※終了するにはCtrl+Cを押してください")
     print("")
     
     bot = VoiceBot()
-    success = bot.run_requirements_1_to_3()
     
-    if success:
-        print("\n🎉 全ての要件が正常に完了しました！")
-    else:
-        print("\n❌ 処理中にエラーが発生しました")
+    try:
+        # 無限ループ開始
+        bot.run_requirements_1_to_3()
+    except KeyboardInterrupt:
+        print("\n🛑 プログラムを終了します")
+    except Exception as e:
+        print(f"\n❌ エラーが発生しました: {e}")
+        logger.error(f"Main loop error: {e}")
 
 def test_voice_function():
     """音声機能のテスト用関数"""
