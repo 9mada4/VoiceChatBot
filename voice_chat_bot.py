@@ -382,12 +382,8 @@ class VoiceBot:
             # 音声入力終了の検知を待機
             print("🎤 音声で話してください。「音声入力終わり」と言うと音声入力が停止されます")
             
-            # バックグラウンドスレッドの終了を待機
-            self.background_thread.join(timeout=60)  # 最大60秒待機
-            
-            if not self.stop_monitoring:
-                print("⚠️ タイムアウトしました。手動で音声入力を停止します")
-                self.stop_dictation()
+            # バックグラウンドスレッドの終了を待機（タイムアウトなし）
+            self.background_thread.join()  # タイムアウトを削除
             
             # 要件7: Cmd+Enterで送信
             print("\n【ステップ7】送信")
