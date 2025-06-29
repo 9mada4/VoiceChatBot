@@ -281,98 +281,6 @@ class VoiceBot:
             logger.error(f"Failed to press enter: {e}")
             return False
     
-    def read_screenshot_with_vision(self, screenshot_path: str) -> str:
-        """スクリーンショットをmacOS Vision frameworkでOCR読み取り"""
-        try:
-            if not os.path.exists(screenshot_path):
-                return f"スクリーンショットファイル {os.path.basename(screenshot_path)} が見つかりません。"
-            
-            if VISION_AVAILABLE:
-                return self._read_with_vision_framework(screenshot_path)
-            else:
-                return self._read_with_fallback_ocr(screenshot_path)
-                
-        except Exception as e:
-            logger.error(f"Failed to read screenshot: {e}")
-            return f"スクリーンショット {os.path.basename(screenshot_path)} の読み取り中にエラーが発生しました: {str(e)}"
-    
-    def _read_with_vision_framework(self, screenshot_path: str) -> str:
-        """Vision frameworkを使用したOCR処理"""
-        try:
-            from objc import nil
-            
-            # 画像ファイルを読み込み
-            image_url = NSURL.fileURLWithPath_(screenshot_path)
-            image_data = NSData.dataWithContentsOfURL_(image_url)
-            
-            if not image_data:
-                return f"画像ファイル {os.path.basename(screenshot_path)} の読み込みに失敗しました。"
-            
-            # VNImageRequestHandlerを作成
-            request_handler = Vision.VNImageRequestHandler.alloc().initWithData_options_(image_data, nil)
-            
-            # テキスト認識リクエストを作成
-            text_request = Vision.VNRecognizeTextRequest.alloc().init()
-            text_request.setRecognitionLevel_(Vision.VNRequestTextRecognitionLevelAccurate)
-            text_request.setRecognitionLanguages_(["en-US", "ja-JP"])
-            text_request.setUsesLanguageCorrection_(True)
-            
-            # リクエストを実行
-            error = None
-            success = request_handler.performRequests_error_([text_request], None)
-            
-            if not success:
-                return f"Vision framework でのテキスト認識に失敗しました。"
-            
-            # 結果を取得
-            results = text_request.results()
-            if not results or len(results) == 0:
-                return f"スクリーンショット {os.path.basename(screenshot_path)} からテキストが見つかりませんでした。"
-            
-            # 認識されたテキストを結合
-            recognized_texts = []
-            for observation in results:
-                if hasattr(observation, 'topCandidates_'):
-                    candidates = observation.topCandidates_(1)
-                    if candidates and len(candidates) > 0:
-                        text = candidates[0].string()
-                        if text and len(text.strip()) > 0:
-                            recognized_texts.append(text.strip())
-            
-            if not recognized_texts:
-                return f"スクリーンショット {os.path.basename(screenshot_path)} からテキストが認識できませんでした。"
-            
-            full_text = "\n".join(recognized_texts)
-            logger.info(f"Vision OCR結果: {len(full_text)} 文字認識")
-            
-            return f"スクリーンショット {os.path.basename(screenshot_path)} から以下のテキストを認識しました:\n\n{full_text}"
-            
-        except Exception as e:
-            logger.error(f"Vision framework OCR error: {e}")
-            return self._read_with_fallback_ocr(screenshot_path)
-    
-    def _read_with_fallback_ocr(self, screenshot_path: str) -> str:
-        """フォールバック用の簡易OCR"""
-        try:
-            # textutilを使用したフォールバック
-            result = subprocess.run([
-                'textutil', '-convert', 'txt', '-stdout', screenshot_path
-            ], capture_output=True, text=True, timeout=10)
-            
-            if result.returncode == 0 and result.stdout.strip():
-                content = result.stdout.strip()
-                return f"スクリーンショット {os.path.basename(screenshot_path)} から以下のテキストを認識しました（フォールバック）:\n\n{content}"
-            
-            # textutilが失敗した場合、ファイル存在確認メッセージ
-            file_size = os.path.getsize(screenshot_path)
-            return f"スクリーンショット {os.path.basename(screenshot_path)} （{file_size} bytes）を確認しました。テキスト認識機能は現在制限されています。"
-            
-        except subprocess.TimeoutExpired:
-            return f"スクリーンショット {os.path.basename(screenshot_path)} の処理がタイムアウトしました。"
-        except Exception as e:
-            logger.error(f"Fallback OCR error: {e}")
-            return f"スクリーンショット {os.path.basename(screenshot_path)} を確認しました。"
-    
     def send_with_cmd_enter(self) -> bool:
         """要件7: Cmd+Enterで送信"""
         if not QUARTZ_AVAILABLE:
@@ -403,34 +311,21 @@ class VoiceBot:
             return False
     
     def handle_post_send_screenshot(self) -> bool:
-        """送信後のスクリーンショット処理（簡略化版）"""
+        """送信後の確認処理（簡略化版）"""
         try:
-            print("\n【ステップ8】スクリーンショット処理")
+            print("\n【ステップ8】ChatGPT出力確認")
             
             # 音声で確認を待機
             if self.wait_for_voice_confirmation("ChatGPTの出力が終了したら「はい」と答えてください"):
-                print("✅ 「はい」を検知 - ChatGPTウィンドウをキャプチャします")
-                
-                # アクティブウィンドウをキャプチャ
-                screenshot_path = self.capture_active_window()
-                if screenshot_path:
-                    # OCRでテキストを読み取り
-                    screenshot_text = self.read_screenshot_with_vision(screenshot_path)
-                    
-                    # ファイル名部分を除去して内容のみを抽出
-                    content_only = self.extract_content_from_ocr_result(screenshot_text)
-                    self.speak_text(content_only)
-                    return True
-                else:
-                    print("❌ ウィンドウキャプチャに失敗しました - 実行終了")
-                    return False
+                print("✅ 「はい」を検知 - 処理完了しました")
+                return True
             else:
                 print("❌ 音声確認がキャンセルされました")
                 return False
             
         except Exception as e:
-            logger.error(f"Post-send screenshot error: {e}")
-            print("❌ スクリーンショット処理中にエラーが発生しました")
+            logger.error(f"Post-send confirmation error: {e}")
+            print("❌ 確認処理中にエラーが発生しました")
             return False
     
     def run_requirements_1_to_3(self):
@@ -486,82 +381,6 @@ class VoiceBot:
             logger.error(f"Requirements 4-7 error: {e}")
             return False
     
-    def capture_active_window(self) -> Optional[str]:
-        """インタラクティブなウィンドウ選択でスクリーンショットを取得"""
-        try:
-            # スクリプトのディレクトリにscreenshot.pngで保存
-            script_dir = os.path.dirname(os.path.abspath(__file__))
-            screenshot_path = os.path.join(script_dir, "screenshot.png")
-
-            print("📸 インタラクティブスクリーンショットを開始...")
-            print("💡 ウィンドウを選択してください。自動でエンターキーを送信します")
-
-            # screencapture -iW -o でインタラクティブなウィンドウ選択
-            # -i: インタラクティブモード, -W: ウィンドウモード, -o: 音なし
-            cmd = ['screencapture', '-iW', '-o', screenshot_path]
-            
-            # バックグラウンドでscreencaptureを起動
-            process = subprocess.Popen(cmd)
-            
-            # ユーザーがウィンドウを選択する時間を待機
-            time.sleep(2.0)  # 2秒待機してからエンターキーを送信
-            
-            # エンターキーを自動送信
-            if self.press_enter():
-                print("✅ エンターキーを送信しました")
-                
-                # ファイル保存のタイムラグを考慮してエンター後2秒待機
-                print("💾 ファイル保存を待機中...")
-                time.sleep(2.0)
-            else:
-                print("⚠️ エンターキー送信に失敗しましたが、処理を続行します")
-            
-            # プロセスの完了を待機
-            try:
-                process.wait(timeout=10)
-                
-                if process.returncode == 0:
-                    if os.path.exists(screenshot_path):
-                        print(f"✅ インタラクティブスクリーンショット完了: {screenshot_path}")
-                        return screenshot_path
-                    else:
-                        print("❌ スクリーンショットファイルが作成されませんでした")
-                        return None
-                else:
-                    print(f"❌ screencaptureエラー（戻り値: {process.returncode}）")
-                    return self._capture_screen_fallback(screenshot_path)
-                    
-            except subprocess.TimeoutExpired:
-                print("❌ screencapture処理がタイムアウトしました")
-                process.terminate()
-                return self._capture_screen_fallback(screenshot_path)
-
-        except Exception as e:
-            logger.error(f"Failed to capture with interactive mode: {e}")
-            return self._capture_screen_fallback(screenshot_path)
-    
-    def _capture_screen_fallback(self, screenshot_path: str) -> Optional[str]:
-        """フォールバック: 画面全体をキャプチャ"""
-        try:
-            print("📸 画面全体をキャプチャ中...")
-            cmd = ['screencapture', '-x', '-o', screenshot_path]
-            
-            result = subprocess.run(cmd, capture_output=True, text=True, timeout=10)
-            
-            if result.returncode == 0:
-                if os.path.exists(screenshot_path):
-                    print(f"✅ 画面全体キャプチャ完了: {screenshot_path}")
-                    return screenshot_path
-                else:
-                    print("❌ スクリーンショットファイルが作成されませんでした")
-                    return None
-            else:
-                print(f"❌ screencaptureコマンドエラー: {result.stderr}")
-                return None
-                
-        except Exception as e:
-            logger.error(f"Fallback capture failed: {e}")
-            return None
     
     def wait_for_voice_confirmation(self, message: str) -> bool:
         """音声で「はい」の確認を待機"""
@@ -616,31 +435,121 @@ class VoiceBot:
                 logger.error(f"Failed to wait for voice confirmation: {e}")
                 return False
     
-    def extract_content_from_ocr_result(self, ocr_result: str) -> str:
-        """OCR結果からファイル名部分を除去して内容のみを抽出"""
+    def scroll_right_side(self, scroll_amount: int = 5) -> bool:
+        """画面右側でスクロール"""
+        if not QUARTZ_AVAILABLE:
+            print("💡 手動でスクロールしてください")
+            return False
+        
         try:
-            # OCR結果の形式: "スクリーンショット screenshot.png から以下のテキストを認識しました:\n\n{実際の内容}"
-            # または: "スクリーンショット screenshot.png から以下のテキストを認識しました（フォールバック）:\n\n{実際の内容}"
+            # 画面の右側の位置を計算（画面幅の75%あたり）
+            from Quartz import CGDisplayBounds, CGMainDisplayID
             
-            # ":\n\n" または ")::\n\n" の後の部分を抽出
-            patterns = [
-                "から以下のテキストを認識しました:\n\n",
-                "から以下のテキストを認識しました（フォールバック）:\n\n"
-            ]
+            display_bounds = CGDisplayBounds(CGMainDisplayID())
+            screen_width = int(display_bounds.size.width)
+            screen_height = int(display_bounds.size.height)
             
-            for pattern in patterns:
-                if pattern in ocr_result:
-                    content = ocr_result.split(pattern, 1)[-1].strip()
-                    if content:
-                        return content
+            # 画面右側の座標（画面幅の75%、高さの50%）
+            right_x = int(screen_width * 0.75)
+            center_y = int(screen_height * 0.5)
             
-            # パターンにマッチしない場合は、元のテキストをそのまま返す
-            return ocr_result.strip()
+            print(f"📜 画面右側でスクロール中... (位置: {right_x}, {center_y})")
+            
+            # スクロールイベントを作成
+            from Quartz.CoreGraphics import CGEventCreateScrollWheelEvent, CGEventPost, kCGScrollEventUnitPixel
+            
+            # 下方向にスクロール（負の値で下スクロール）
+            scroll_event = CGEventCreateScrollWheelEvent(
+                None,  # source
+                kCGScrollEventUnitPixel,  # units
+                1,     # wheelCount (垂直スクロールのみ)
+                -scroll_amount * 10  # deltaAxis1 (負の値で下スクロール)
+            )
+            
+            # マウス位置を設定
+            from Quartz.CoreGraphics import CGEventSetLocation
+            from Foundation import NSPoint
+            CGEventSetLocation(scroll_event, NSPoint(right_x, center_y))
+            
+            # イベントを送信
+            CGEventPost(kCGHIDEventTap, scroll_event)
+            
+            print("✅ 右側スクロール完了")
+            return True
             
         except Exception as e:
-            logger.error(f"Failed to extract content from OCR result: {e}")
-            return ocr_result
+            logger.error(f"Failed to scroll on right side: {e}")
+            return False
+    
+    def click_at_position(self, x: int, y: int) -> bool:
+        """指定した座標をクリック"""
+        if not QUARTZ_AVAILABLE:
+            print(f"💡 手動で座標 ({x}, {y}) をクリックしてください")
+            return False
+        
+        try:
+            from Quartz.CoreGraphics import (
+                CGEventCreateMouseEvent, CGEventPost, 
+                kCGEventLeftMouseDown, kCGEventLeftMouseUp,
+                kCGMouseButtonLeft
+            )
+            from Foundation import NSPoint
+            
+            print(f"🖱️ 座標 ({x}, {y}) をクリック中...")
+            
+            # マウスダウンイベント
+            mouse_down = CGEventCreateMouseEvent(
+                None,
+                kCGEventLeftMouseDown,
+                NSPoint(x, y),
+                kCGMouseButtonLeft
+            )
+            
+            # マウスアップイベント
+            mouse_up = CGEventCreateMouseEvent(
+                None,
+                kCGEventLeftMouseUp,
+                NSPoint(x, y),
+                kCGMouseButtonLeft
+            )
+            
+            # クリック実行
+            CGEventPost(kCGHIDEventTap, mouse_down)
+            time.sleep(0.1)  # 短い間隔
+            CGEventPost(kCGHIDEventTap, mouse_up)
+            
+            print(f"✅ 座標 ({x}, {y}) のクリック完了")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Failed to click at position ({x}, {y}): {e}")
+            return False
+    
+    def find_and_click_image(self, target_description: str = "指定された画像") -> bool:
+        """画像を探してクリック（簡易版）"""
+        try:
+            print(f"🔍 {target_description}を探してクリックします...")
+            
+            # 画面の中央右寄りの位置をデフォルトとして使用
+            from Quartz import CGDisplayBounds, CGMainDisplayID
+            
+            display_bounds = CGDisplayBounds(CGMainDisplayID())
+            screen_width = int(display_bounds.size.width)
+            screen_height = int(display_bounds.size.height)
+            
+            # 画面右側の適当な位置をクリック（画面幅の70%, 高さの40%）
+            click_x = int(screen_width * 0.7)
+            click_y = int(screen_height * 0.4)
+            
+            print(f"💡 推定位置 ({click_x}, {click_y}) をクリックします")
+            return self.click_at_position(click_x, click_y)
+            
+        except Exception as e:
+            logger.error(f"Failed to find and click image: {e}")
+            return False
 
+    # ...existing code...
+    
 def main():
     """メイン関数"""
     print("VoiceChatBot for macOS")
@@ -649,7 +558,7 @@ def main():
     print("1. 音声入力開始（確認なし）")
     print("2. 音声入力終了の検知")
     print("3. 自動送信")
-    print("4. スクリーンショット（音声制御）")
+    print("4. ChatGPT出力確認（音声制御）")
     print("※全て音声で操作します（ひらがな・漢字・カタカナ対応）")
     print("")
     
@@ -661,36 +570,60 @@ def main():
     else:
         print("\n❌ 処理中にエラーが発生しました")
 
-def test_screenshot_function():
-    """スクリーンショット機能のテスト用関数"""
-    print("インタラクティブスクリーンショット機能のテストを開始します...")
+def test_voice_function():
+    """音声機能のテスト用関数"""
+    print("音声機能のテストを開始します...")
     
     bot = VoiceBot()
     
-    # インタラクティブスクリーンショットのテスト
-    print("\n=== インタラクティブスクリーンショットテスト ===")
-    print("ウィンドウ選択式スクリーンショットを実行します...")
-    screenshot_path = bot.capture_active_window()
+    # 音声確認テスト
+    print("\n=== 音声確認テスト ===")
+    print("音声確認機能をテストします...")
+    result = bot.wait_for_voice_confirmation("テスト用メッセージです。「はい」と答えてください")
     
-    if screenshot_path:
-        print(f"✅ インタラクティブスクリーンショット成功: {screenshot_path}")
-        
-        # OCRテスト
-        if os.path.exists(screenshot_path):
-            print("\n=== OCRテスト ===")
-            ocr_result = bot.read_screenshot_with_vision(screenshot_path)
-            print(f"OCR結果:\n{ocr_result}")
-        else:
-            print("❌ スクリーンショットファイルが見つかりません")
+    if result:
+        print("✅ 音声確認テスト成功")
     else:
-        print("❌ インタラクティブスクリーンショット失敗")
+        print("❌ 音声確認テスト失敗")
+
+def test_scroll_click_function():
+    """スクロールとクリック機能のテスト用関数"""
+    print("スクロールとクリック機能のテストを開始します...")
+    
+    bot = VoiceBot()
+    
+    # スクロールテスト
+    print("\n=== 右側スクロールテスト ===")
+    print("画面右側でスクロールします...")
+    if bot.scroll_right_side():
+        print("✅ 右側スクロールテスト成功")
+    else:
+        print("❌ 右側スクロールテスト失敗")
+    
+    time.sleep(2)  # 2秒待機
+    
+    # クリックテスト
+    print("\n=== 画像クリックテスト ===")
+    print("画像位置を推定してクリックします...")
+    if bot.find_and_click_image("テスト画像"):
+        print("✅ 画像クリックテスト成功")
+    else:
+        print("❌ 画像クリックテスト失敗")
 
 if __name__ == "__main__":
     import sys
     
     # コマンドライン引数でテストモードを指定
-    if len(sys.argv) > 1 and sys.argv[1] == "test":
-        test_screenshot_function()
+    if len(sys.argv) > 1:
+        if sys.argv[1] == "test":
+            test_voice_function()
+        elif sys.argv[1] == "scroll":
+            test_scroll_click_function()
+        else:
+            print("使用方法:")
+            print("  python voice_chat_bot.py          # メイン機能")
+            print("  python voice_chat_bot.py test     # 音声テスト")
+            print("  python voice_chat_bot.py scroll   # スクロール・クリックテスト")
     else:
         main()
 
