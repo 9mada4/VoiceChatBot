@@ -484,20 +484,19 @@ class VoiceBot:
             return False
     
     def capture_active_window(self) -> Optional[str]:
-        """アクティブウィンドウをキャプチャしてscreenshots.pngに保存"""
+        """アクティブウィンドウをキャプチャしてscreenshot.pngに保存"""
         try:
-            # 現在のワーキングディレクトリにscreenshots.pngで保存
-            screenshot_path = "screenshots.png"
-            
-            print("📸 アクティブウィンドウをキャプチャ中...")
-            
-            # screencaptureコマンドでアクティブウィンドウをキャプチャ
-            # -w: ウィンドウモード（ウィンドウを選択）
-            # -o: 影を含めない
-            cmd = ['screencapture', '-w', '-o', screenshot_path]
-            
+            # スクリプトのディレクトリにscreenshot.pngで保存
+            script_dir = os.path.dirname(os.path.abspath(__file__))
+            screenshot_path = os.path.join(script_dir, "screenshot.png")
+
+            print("📸 画面をキャプチャ中...")
+
+            # screencaptureコマンドで画面全体をキャプチャ（-xで無音、-oで影なし）
+            cmd = ['screencapture', '-x', '-o', screenshot_path]
+
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=10)
-            
+
             if result.returncode == 0:
                 if os.path.exists(screenshot_path):
                     print(f"✅ スクリーンショット保存完了: {screenshot_path}")
@@ -508,7 +507,7 @@ class VoiceBot:
             else:
                 print(f"❌ screencaptureコマンドエラー: {result.stderr}")
                 return None
-                
+
         except subprocess.TimeoutExpired:
             print("❌ スクリーンショット撮影がタイムアウトしました")
             return None

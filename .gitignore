@@ -29,7 +29,10 @@ temp_*
 *.tmp
 
 # スクリーンショットファイル
-screenshots.png
+*.png
+*.jpg
+*.jpeg
+screenshot.png
 
 # 個人情報
 .env
