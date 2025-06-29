@@ -526,11 +526,337 @@ class VoiceBot:
             return False
     
     def find_and_click_image(self, target_description: str = "指定された画像") -> bool:
-        """画像を探してクリック（簡易版）"""
+        """画像を探してクリック（改良版：図形認識→画像解析）"""
         try:
             print(f"🔍 {target_description}を探してクリックします...")
             
-            # 画面の中央右寄りの位置をデフォルトとして使用
+            # ステップ1: 画面右側をキャプチャ
+            right_screenshot = self.capture_right_side_screen()
+            if not right_screenshot:
+                print("❌ 画面右側のキャプチャに失敗しました")
+                return False
+            
+            # ステップ2: 図形を個別で認識して座標を保存
+            shapes = self.detect_shapes_and_coordinates(right_screenshot)
+            if not shapes:
+                print("❌ 図形が見つかりませんでした")
+                return self.click_fallback_position()
+            
+            # ステップ3: 各図形がボタンと一致するか画像解析
+            button_position = self.match_shapes_with_button(right_screenshot, shapes, "startVoiceBtn.png")
+            if button_position:
+                click_x, click_y = button_position
+                print(f"🎯 ボタンを発見: ({click_x}, {click_y})")
+                return self.click_at_position(click_x, click_y)
+            else:
+                print("❌ startVoiceBtn.pngと一致する図形が見つかりませんでした")
+                return self.click_fallback_position()
+            
+        except Exception as e:
+            logger.error(f"Failed to find and click image: {e}")
+            return self.click_fallback_position()
+    
+    def detect_shapes_and_coordinates(self, screenshot_path: str) -> list:
+        """図形を個別で認識して座標を保存"""
+        try:
+            try:
+                import cv2
+                import numpy as np
+            except ImportError:
+                print("❌ OpenCVが利用できません。pip install opencv-pythonでインストールしてください")
+                return []
+            
+            # 画像を読み込み
+            img = cv2.imread(screenshot_path)
+            if img is None:
+                print("❌ スクリーンショットの読み込みに失敗しました")
+                return []
+            
+            print("🔍 図形認識を開始...")
+            
+            # グレースケール変換
+            gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+            
+            # エッジ検出
+            edges = cv2.Canny(gray, 50, 150, apertureSize=3)
+            
+            # 輪郭検出
+            contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            
+            shapes = []
+            
+            for i, contour in enumerate(contours):
+                # 小さすぎる輪郭は無視
+                area = cv2.contourArea(contour)
+                if area < 100:  # 最小面積閾値
+                    continue
+                
+                # 輪郭の近似
+                epsilon = 0.02 * cv2.arcLength(contour, True)
+                approx = cv2.approxPolyDP(contour, epsilon, True)
+                
+                # バウンディングボックスを取得
+                x, y, w, h = cv2.boundingRect(contour)
+                
+                # 中心座標を計算
+                center_x = x + w // 2
+                center_y = y + h // 2
+                
+                # 図形の種類を判定
+                shape_type = self.classify_shape(approx, area, w, h)
+                
+                shape_info = {
+                    'id': i,
+                    'type': shape_type,
+                    'center': (center_x, center_y),
+                    'bbox': (x, y, w, h),
+                    'area': area,
+                    'contour': contour,
+                    'approx': approx
+                }
+                
+                shapes.append(shape_info)
+                print(f"  図形{i}: {shape_type}, 中心({center_x}, {center_y}), 面積{area}")
+            
+            print(f"✅ {len(shapes)}個の図形を認識しました")
+            return shapes
+            
+        except Exception as e:
+            logger.error(f"Failed to detect shapes: {e}")
+            return []
+    
+    def classify_shape(self, approx, area: float, width: int, height: int) -> str:
+        """図形の種類を分類"""
+        try:
+            vertices = len(approx)
+            aspect_ratio = width / height if height > 0 else 0
+            
+            # 円形判定
+            if vertices > 8 and 0.7 <= aspect_ratio <= 1.3:
+                return "circle"
+            
+            # 矩形判定
+            elif vertices == 4:
+                if 0.9 <= aspect_ratio <= 1.1:
+                    return "square"
+                else:
+                    return "rectangle"
+            
+            # 三角形判定
+            elif vertices == 3:
+                return "triangle"
+            
+            # その他の多角形
+            elif vertices > 4:
+                return f"polygon_{vertices}"
+            
+            else:
+                return "unknown"
+                
+        except Exception as e:
+            logger.error(f"Failed to classify shape: {e}")
+            return "unknown"
+    
+    def match_shapes_with_button(self, screenshot_path: str, shapes: list, button_image: str) -> Optional[tuple]:
+        """各図形がボタンと一致するか画像解析"""
+        try:
+            try:
+                import cv2
+                import numpy as np
+            except ImportError:
+                print("❌ OpenCVが利用できません")
+                return None
+            
+            # ボタン画像を読み込み
+            script_dir = os.path.dirname(os.path.abspath(__file__))
+            button_path = os.path.join(script_dir, button_image)
+            
+            if not os.path.exists(button_path):
+                print(f"❌ ボタン画像 {button_image} が見つかりません")
+                return None
+            
+            button_img = cv2.imread(button_path)
+            if button_img is None:
+                print("❌ ボタン画像の読み込みに失敗しました")
+                return None
+            
+            screenshot_img = cv2.imread(screenshot_path)
+            if screenshot_img is None:
+                print("❌ スクリーンショットの読み込みに失敗しました")
+                return None
+            
+            button_height, button_width = button_img.shape[:2]
+            print(f"🔍 ボタン画像解析: サイズ({button_width}x{button_height})")
+            
+            best_match = None
+            best_confidence = 0.0
+            
+            # 各図形領域でボタンマッチングを実行
+            for shape in shapes:
+                try:
+                    x, y, w, h = shape['bbox']
+                    
+                    # 図形領域を少し拡張（ボタンの境界を含むため）
+                    margin = 10
+                    x1 = max(0, x - margin)
+                    y1 = max(0, y - margin)
+                    x2 = min(screenshot_img.shape[1], x + w + margin)
+                    y2 = min(screenshot_img.shape[0], y + h + margin)
+                    
+                    # 図形領域を切り出し
+                    roi = screenshot_img[y1:y2, x1:x2]
+                    
+                    if roi.size == 0:
+                        continue
+                    
+                    # テンプレートマッチング
+                    if roi.shape[0] >= button_height and roi.shape[1] >= button_width:
+                        result = cv2.matchTemplate(roi, button_img, cv2.TM_CCOEFF_NORMED)
+                        _, max_val, _, max_loc = cv2.minMaxLoc(result)
+                        
+                        print(f"  図形{shape['id']} ({shape['type']}): マッチング信頼度 {max_val:.3f}")
+                        
+                        if max_val > best_confidence and max_val > 0.7:  # 閾値
+                            # グローバル座標を計算
+                            local_center_x = max_loc[0] + button_width // 2
+                            local_center_y = max_loc[1] + button_height // 2
+                            
+                            global_center_x = x1 + local_center_x
+                            global_center_y = y1 + local_center_y
+                            
+                            best_match = (global_center_x, global_center_y)
+                            best_confidence = max_val
+                            
+                            print(f"    ✅ 新しい最良マッチ: 信頼度 {max_val:.3f}, 位置 ({global_center_x}, {global_center_y})")
+                
+                except Exception as e:
+                    logger.error(f"Error processing shape {shape['id']}: {e}")
+                    continue
+            
+            if best_match:
+                # 画面全体の座標に変換（右側キャプチャのオフセットを追加）
+                from Quartz import CGDisplayBounds, CGMainDisplayID
+                display_bounds = CGDisplayBounds(CGMainDisplayID())
+                screen_width = int(display_bounds.size.width)
+                right_offset = screen_width // 2
+                
+                final_x = right_offset + best_match[0]
+                final_y = best_match[1]
+                
+                print(f"🎯 最終的なボタン位置: ({final_x}, {final_y}), 信頼度: {best_confidence:.3f}")
+                return (final_x, final_y)
+            else:
+                print("❌ 閾値を超える一致が見つかりませんでした")
+                return None
+                
+        except Exception as e:
+            logger.error(f"Failed to match shapes with button: {e}")
+            return None
+    
+    def capture_right_side_screen(self) -> Optional[str]:
+        """画面右側をキャプチャ"""
+        try:
+            from Quartz import CGDisplayBounds, CGMainDisplayID
+            
+            display_bounds = CGDisplayBounds(CGMainDisplayID())
+            screen_width = int(display_bounds.size.width)
+            screen_height = int(display_bounds.size.height)
+            
+            # 画面右側の範囲を計算（右50%）
+            right_x = screen_width // 2
+            right_width = screen_width - right_x
+            
+            # スクリプトのディレクトリにright_side_screenshot.pngで保存
+            script_dir = os.path.dirname(os.path.abspath(__file__))
+            screenshot_path = os.path.join(script_dir, "right_side_screenshot.png")
+            
+            print(f"📸 画面右側をキャプチャ中... (範囲: {right_x}, 0, {right_width}, {screen_height})")
+            
+            # screencaptureで画面右側のみをキャプチャ
+            cmd = [
+                'screencapture', 
+                '-x',  # 音なし
+                '-R', f"{right_x},0,{right_width},{screen_height}",  # 範囲指定
+                screenshot_path
+            ]
+            
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=10)
+            
+            if result.returncode == 0 and os.path.exists(screenshot_path):
+                print(f"✅ 画面右側キャプチャ完了: {screenshot_path}")
+                return screenshot_path
+            else:
+                print(f"❌ 画面右側キャプチャ失敗: {result.stderr}")
+                return None
+                
+        except Exception as e:
+            logger.error(f"Failed to capture right side screen: {e}")
+            return None
+    
+    def find_button_in_image(self, screenshot_path: str, button_image: str) -> Optional[tuple]:
+        """スクリーンショット内でボタン画像を検索"""
+        try:
+            # OpenCVを使用した画像認識
+            try:
+                import cv2
+                import numpy as np
+            except ImportError:
+                print("❌ OpenCVが利用できません。pip install opencv-pythonでインストールしてください")
+                return None
+            
+            # スクリプトディレクトリからボタン画像を読み込み
+            script_dir = os.path.dirname(os.path.abspath(__file__))
+            button_path = os.path.join(script_dir, button_image)
+            
+            if not os.path.exists(button_path):
+                print(f"❌ ボタン画像 {button_image} が見つかりません")
+                return None
+            
+            # 画像を読み込み
+            screenshot_img = cv2.imread(screenshot_path)
+            button_img = cv2.imread(button_path)
+            
+            if screenshot_img is None or button_img is None:
+                print("❌ 画像の読み込みに失敗しました")
+                return None
+            
+            print(f"🔍 {button_image} を検索中...")
+            
+            # テンプレートマッチング
+            result = cv2.matchTemplate(screenshot_img, button_img, cv2.TM_CCOEFF_NORMED)
+            min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
+            
+            # マッチング閾値
+            threshold = 0.7
+            
+            if max_val >= threshold:
+                # ボタンの中心位置を計算
+                button_height, button_width = button_img.shape[:2]
+                center_x = max_loc[0] + button_width // 2
+                center_y = max_loc[1] + button_height // 2
+                
+                # 画面全体の座標に変換（右側キャプチャの座標オフセットを追加）
+                from Quartz import CGDisplayBounds, CGMainDisplayID
+                display_bounds = CGDisplayBounds(CGMainDisplayID())
+                screen_width = int(display_bounds.size.width)
+                right_offset = screen_width // 2
+                
+                global_x = right_offset + center_x
+                global_y = center_y
+                
+                print(f"✅ ボタンを発見: 信頼度 {max_val:.2f}, 位置 ({global_x}, {global_y})")
+                return (global_x, global_y)
+            else:
+                print(f"❌ ボタンが見つかりません: 最高信頼度 {max_val:.2f} < 閾値 {threshold}")
+                return None
+                
+        except Exception as e:
+            logger.error(f"Failed to find button in image: {e}")
+            return None
+    
+    def click_fallback_position(self) -> bool:
+        """フォールバック: 推定位置をクリック"""
+        try:
             from Quartz import CGDisplayBounds, CGMainDisplayID
             
             display_bounds = CGDisplayBounds(CGMainDisplayID())
@@ -541,11 +867,49 @@ class VoiceBot:
             click_x = int(screen_width * 0.7)
             click_y = int(screen_height * 0.4)
             
-            print(f"💡 推定位置 ({click_x}, {click_y}) をクリックします")
+            print(f"💡 フォールバック: 推定位置 ({click_x}, {click_y}) をクリックします")
             return self.click_at_position(click_x, click_y)
             
         except Exception as e:
-            logger.error(f"Failed to find and click image: {e}")
+            logger.error(f"Failed to click fallback position: {e}")
+            return False
+    
+    def find_and_click_image_simple(self, button_image: str = "startVoiceBtn.png") -> bool:
+        """PyAutoGUIを使用したシンプルな画像検索・クリック"""
+        try:
+            try:
+                import pyautogui
+            except ImportError:
+                print("❌ PyAutoGUIが利用できません。pip install pyautoguiでインストールしてください")
+                return False
+            
+            print(f"🔍 PyAutoGUIで{button_image}を検索中...")
+            
+            # スクリプトディレクトリからボタン画像のパスを取得
+            script_dir = os.path.dirname(os.path.abspath(__file__))
+            button_path = os.path.join(script_dir, button_image)
+            
+            if not os.path.exists(button_path):
+                print(f"❌ ボタン画像 {button_image} が見つかりません")
+                return False
+            
+            # 画像を画面上で検索
+            location = pyautogui.locateOnScreen(button_path, confidence=0.8)
+            
+            if location:
+                # 見つかった位置の中心をクリック
+                center = pyautogui.center(location)
+                print(f"🎯 ボタンを発見: {location}, 中心: {center}")
+                
+                pyautogui.click(center)
+                print(f"✅ {button_image} のクリック完了")
+                return True
+            else:
+                print(f"❌ {button_image} が見つかりませんでした")
+                return False
+                
+        except Exception as e:
+            logger.error(f"Failed to find and click image with PyAutoGUI: {e}")
             return False
 
     # ...existing code...
@@ -602,13 +966,59 @@ def test_scroll_click_function():
     
     time.sleep(2)  # 2秒待機
     
-    # クリックテスト
-    print("\n=== 画像クリックテスト ===")
-    print("画像位置を推定してクリックします...")
-    if bot.find_and_click_image("テスト画像"):
-        print("✅ 画像クリックテスト成功")
+    # 方法選択
+    print("\n=== 画像検索方法選択 ===")
+    print("1. PyAutoGUI（シンプル）")
+    print("2. OpenCV図形認識（高度）")
+    
+    try:
+        choice = input("選択してください (1 or 2): ").strip()
+    except:
+        choice = "2"  # デフォルト
+    
+    if choice == "1":
+        # PyAutoGUI方式
+        print("\n=== PyAutoGUI方式テスト ===")
+        if bot.find_and_click_image_simple("startVoiceBtn.png"):
+            print("✅ PyAutoGUI方式テスト成功")
+        else:
+            print("❌ PyAutoGUI方式テスト失敗")
     else:
-        print("❌ 画像クリックテスト失敗")
+        # OpenCV図形認識方式（既存）
+        print("\n=== 画面右側キャプチャテスト ===")
+        screenshot_path = bot.capture_right_side_screen()
+        if screenshot_path:
+            print(f"✅ 画面右側キャプチャ成功: {screenshot_path}")
+            
+            print("\n=== 図形認識テスト ===")
+            shapes = bot.detect_shapes_and_coordinates(screenshot_path)
+            if shapes:
+                print(f"✅ 図形認識成功: {len(shapes)}個の図形を検出")
+                for shape in shapes[:5]:  # 最初の5個のみ表示
+                    print(f"  - 図形{shape['id']}: {shape['type']}, 中心{shape['center']}, 面積{shape['area']}")
+            else:
+                print("❌ 図形認識失敗")
+        else:
+            print("❌ 画面右側キャプチャ失敗")
+            return
+        
+        time.sleep(1)
+        
+        print("\n=== OpenCV図形認識方式テスト ===")
+        if bot.find_and_click_image("startVoiceBtn.png"):
+            print("✅ OpenCV図形認識方式テスト成功")
+        else:
+            print("❌ OpenCV図形認識方式テスト失敗")
+    
+    time.sleep(2)  # 2秒待機
+    
+    # startVoiceBtn.png検索・クリックテスト（シンプル版）
+    print("\n=== startVoiceBtn.png検索・クリックテスト（シンプル版） ===")
+    print("PyAutoGUIを使用してstartVoiceBtn.pngを探してクリックします...")
+    if bot.find_and_click_image_simple("startVoiceBtn.png"):
+        print("✅ startVoiceBtn.pngクリックテスト成功")
+    else:
+        print("❌ startVoiceBtn.pngクリックテスト失敗")
 
 if __name__ == "__main__":
     import sys
