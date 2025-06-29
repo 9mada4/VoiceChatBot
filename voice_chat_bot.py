@@ -33,6 +33,23 @@ except ImportError:
     QUARTZ_AVAILABLE = False
     print("Warning: Quartz not available")
 
+# Vision Framework用のインポート
+try:
+    import Vision
+    from Foundation import NSURL, NSData, NSString
+    from Cocoa import NSImage
+    VISION_AVAILABLE = True
+except ImportError:
+    try:
+        # PyObjCライブラリが不完全な場合のフォールバック
+        from Cocoa import NSString
+        from Foundation import NSURL, NSData
+        VISION_AVAILABLE = False
+        print("Warning: Vision framework not fully available, using fallback OCR")
+    except ImportError:
+        VISION_AVAILABLE = False
+        print("Warning: Vision framework and Foundation not available")
+
 # ログ設定
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -344,21 +361,95 @@ class VoiceBot:
             return None
     
     def read_screenshot_with_vision(self, screenshot_path: str) -> str:
-        """スクリーンショットをOCRで読み取り（簡易版）"""
+        """スクリーンショットをmacOS Vision frameworkでOCR読み取り"""
         try:
-            # macOS内蔵のOCRツールを使用
-            result = subprocess.run([
-                'osascript', '-e',
-                f'tell application "System Events" to return (do shell script "echo \'簡易OCR機能により、スクリーンショット {os.path.basename(screenshot_path)} を確認しました。画像内容の詳細な読み取りは現在開発中です。\'")'
-            ], capture_output=True, text=True, timeout=10)
+            if not os.path.exists(screenshot_path):
+                return f"スクリーンショットファイル {os.path.basename(screenshot_path)} が見つかりません。"
             
-            if result.returncode == 0:
-                return result.stdout.strip()
+            if VISION_AVAILABLE:
+                return self._read_with_vision_framework(screenshot_path)
             else:
-                return f"スクリーンショット {os.path.basename(screenshot_path)} を確認しました。"
+                return self._read_with_fallback_ocr(screenshot_path)
                 
         except Exception as e:
             logger.error(f"Failed to read screenshot: {e}")
+            return f"スクリーンショット {os.path.basename(screenshot_path)} の読み取り中にエラーが発生しました: {str(e)}"
+    
+    def _read_with_vision_framework(self, screenshot_path: str) -> str:
+        """Vision frameworkを使用したOCR処理"""
+        try:
+            from objc import nil
+            
+            # 画像ファイルを読み込み
+            image_url = NSURL.fileURLWithPath_(screenshot_path)
+            image_data = NSData.dataWithContentsOfURL_(image_url)
+            
+            if not image_data:
+                return f"画像ファイル {os.path.basename(screenshot_path)} の読み込みに失敗しました。"
+            
+            # VNImageRequestHandlerを作成
+            request_handler = Vision.VNImageRequestHandler.alloc().initWithData_options_(image_data, nil)
+            
+            # テキスト認識リクエストを作成
+            text_request = Vision.VNRecognizeTextRequest.alloc().init()
+            text_request.setRecognitionLevel_(Vision.VNRequestTextRecognitionLevelAccurate)
+            text_request.setRecognitionLanguages_(["en-US", "ja-JP"])
+            text_request.setUsesLanguageCorrection_(True)
+            
+            # リクエストを実行
+            error = None
+            success = request_handler.performRequests_error_([text_request], None)
+            
+            if not success:
+                return f"Vision framework でのテキスト認識に失敗しました。"
+            
+            # 結果を取得
+            results = text_request.results()
+            if not results or len(results) == 0:
+                return f"スクリーンショット {os.path.basename(screenshot_path)} からテキストが見つかりませんでした。"
+            
+            # 認識されたテキストを結合
+            recognized_texts = []
+            for observation in results:
+                if hasattr(observation, 'topCandidates_'):
+                    candidates = observation.topCandidates_(1)
+                    if candidates and len(candidates) > 0:
+                        text = candidates[0].string()
+                        if text and len(text.strip()) > 0:
+                            recognized_texts.append(text.strip())
+            
+            if not recognized_texts:
+                return f"スクリーンショット {os.path.basename(screenshot_path)} からテキストが認識できませんでした。"
+            
+            full_text = "\n".join(recognized_texts)
+            logger.info(f"Vision OCR結果: {len(full_text)} 文字認識")
+            
+            return f"スクリーンショット {os.path.basename(screenshot_path)} から以下のテキストを認識しました:\n\n{full_text}"
+            
+        except Exception as e:
+            logger.error(f"Vision framework OCR error: {e}")
+            return self._read_with_fallback_ocr(screenshot_path)
+    
+    def _read_with_fallback_ocr(self, screenshot_path: str) -> str:
+        """フォールバック用の簡易OCR"""
+        try:
+            # textutilを使用したフォールバック
+            result = subprocess.run([
+                'textutil', '-convert', 'txt', '-stdout', screenshot_path
+            ], capture_output=True, text=True, timeout=10)
+            
+            if result.returncode == 0 and result.stdout.strip():
+                content = result.stdout.strip()
+                return f"スクリーンショット {os.path.basename(screenshot_path)} から以下のテキストを認識しました（フォールバック）:\n\n{content}"
+            
+            # textutilが失敗した場合、ファイル存在確認メッセージ
+            file_size = os.path.getsize(screenshot_path)
+            return f"スクリーンショット {os.path.basename(screenshot_path)} （{file_size} bytes）を確認しました。テキスト認識機能は現在制限されています。"
+            
+        except subprocess.TimeoutExpired:
+            return f"スクリーンショット {os.path.basename(screenshot_path)} の処理がタイムアウトしました。"
+        except Exception as e:
+            logger.error(f"Fallback OCR error: {e}")
             return f"スクリーンショット {os.path.basename(screenshot_path)} を確認しました。"
     
     def wait_for_enter_or_escape(self) -> str:
