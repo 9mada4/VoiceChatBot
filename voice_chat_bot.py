@@ -311,14 +311,29 @@ class VoiceBot:
             return False
     
     def handle_post_send_screenshot(self) -> bool:
-        """送信後の確認処理（簡略化版）"""
+        """送信後の確認処理（スクロール・ボタンクリック実行）"""
         try:
             print("\n【ステップ8】ChatGPT出力確認")
             
             # 音声で確認を待機
             if self.wait_for_voice_confirmation("ChatGPTの出力が終了したら「はい」と答えてください"):
-                print("✅ 「はい」を検知 - 処理完了しました")
-                return True
+                print("✅ 「はい」を検知 - 画面操作を開始します")
+                
+                # スクロール実行
+                print("\n【ステップ9】画面スクロール")
+                if self.scroll_screen():
+                    print("✅ スクロール完了")
+                else:
+                    print("❌ スクロール失敗")
+                
+                # ボタン検索・クリック実行
+                print("\n【ステップ10】ボタン検索・クリック")
+                if self.find_and_click_image_simple("startVoiceBtn.png"):
+                    print("✅ ボタンクリック完了 - 全処理完了しました")
+                    return True
+                else:
+                    print("❌ ボタンクリック失敗")
+                    return False
             else:
                 print("❌ 音声確認がキャンセルされました")
                 return False
@@ -546,45 +561,63 @@ class VoiceBot:
             
             if not os.path.exists(button_path):
                 print(f"❌ ボタン画像 {button_image} が見つかりません")
+                print("💡 startVoiceBtn.pngファイルを作業ディレクトリに配置してください")
                 return False
             
-            # デバッグ: スクリーンショットを取得
+            # デバッグ: スクリーンショットを取得して保存
             screenshot = pyautogui.screenshot()
             print(f"🔍 スクリーンショットサイズ: {screenshot.size}")
             
-            # 画像を画面上で検索（全て検索）
-            try:
-                locations = list(pyautogui.locateAllOnScreen(button_path, confidence=0.4))
-                print(f"🔍 検索結果: {len(locations)}個のボタンを発見")
-                for i, loc in enumerate(locations):
-                    print(f"  ボタン{i+1}: {loc}")
-            except pyautogui.ImageNotFoundException:
-                print(f"❌ {button_image} が見つかりませんでした")
-                return False
-            except Exception as search_error:
-                print(f"❌ 画像検索エラー: {search_error}")
+            # デバッグ用にスクリーンショットを保存
+            debug_screenshot_path = os.path.join(script_dir, "debug_screenshot.png")
+            screenshot.save(debug_screenshot_path)
+            print(f"🔍 デバッグ用スクリーンショット保存: {debug_screenshot_path}")
+            
+            # 画像を画面上で検索（全て検索） - 複数の信頼度で試行
+            confidence_levels = [0.8, 0.6, 0.4, 0.3]
+            locations = []
+            
+            for confidence in confidence_levels:
+                try:
+                    print(f"🔍 信頼度 {confidence} で検索中...")
+                    locations = list(pyautogui.locateAllOnScreen(button_path, confidence=confidence))
+                    if locations:
+                        print(f"🔍 信頼度 {confidence} で {len(locations)}個のボタンを発見")
+                        break
+                    else:
+                        print(f"🔍 信頼度 {confidence} では見つかりませんでした")
+                except pyautogui.ImageNotFoundException:
+                    print(f"🔍 信頼度 {confidence} で画像が見つかりませんでした")
+                    continue
+                except Exception as search_error:
+                    print(f"❌ 信頼度 {confidence} で検索エラー: {search_error}")
+                    continue
+            
+            if not locations:
+                print(f"❌ 全ての信頼度で {button_image} が見つかりませんでした")
+                print("💡 debug_screenshot.pngと比較して、startVoiceBtn.pngが正しいか確認してください")
                 return False
             
-            if locations:
-                # 複数のボタンがある場合は最下部（y座標が最大）のボタンを選択
-                if len(locations) > 1:
-                    bottom_location = max(locations, key=lambda loc: loc.top)
-                    print(f"🎯 複数ボタンあり - 最下部ボタンを選択: {bottom_location}")
-                else:
-                    bottom_location = locations[0]
-                    print(f"🎯 ボタンを発見: {bottom_location}")
-                
-                # 見つかった位置の中心を取得
-                center = pyautogui.center(bottom_location)
-                print(f"🖱️ クリック座標: {center}")
-                
-                # 座標補正なしで直接クリック
-                pyautogui.click(center.x, center.y)
-                print(f"✅ {button_image} のクリック完了（座標補正なし）")
-                return True
+            print(f"🔍 最終検索結果: {len(locations)}個のボタンを発見")
+            for i, loc in enumerate(locations):
+                print(f"  ボタン{i+1}: left={loc.left}, top={loc.top}, width={loc.width}, height={loc.height}")
+            
+            # 複数のボタンがある場合は最下部（y座標が最大）のボタンを選択
+            if len(locations) > 1:
+                bottom_location = max(locations, key=lambda loc: loc.top)
+                print(f"🎯 複数ボタンあり - 最下部ボタンを選択: top={bottom_location.top}")
             else:
-                print(f"❌ {button_image} が見つかりませんでした")
-                return False
+                bottom_location = locations[0]
+                print(f"🎯 ボタンを発見: top={bottom_location.top}")
+            
+            # 見つかった位置の中心を取得
+            center = pyautogui.center(bottom_location)
+            print(f"🖱️ クリック座標: x={center.x}, y={center.y}")
+            
+            # 座標補正なしで直接クリック
+            pyautogui.click(center.x, center.y)
+            print(f"✅ {button_image} のクリック完了（座標補正なし）")
+            return True
                 
         except Exception as e:
             print(f"❌ PyAutoGUIエラーの詳細: {str(e)}")
@@ -600,6 +633,7 @@ def main():
     print("2. 音声入力終了の検知")
     print("3. 自動送信")
     print("4. ChatGPT出力確認（音声制御）")
+    print("5. 画面スクロール・ボタン検索・クリック")
     print("※全て音声で操作します（ひらがな・漢字・カタカナ対応）")
     print("")
     
