@@ -333,7 +333,7 @@ class VoiceBot:
             return False
     
     def get_latest_screenshot(self) -> Optional[str]:
-        """~/Pictures/Screenshotから最新のスクリーンショットを取得"""
+        """~/Pictures/Screenshotから最新のファイルを取得（フィルタリングなし）"""
         try:
             screenshot_dir = os.path.expanduser("~/Pictures/Screenshot")
             
@@ -341,28 +341,25 @@ class VoiceBot:
                 print(f"❌ スクリーンショットディレクトリが見つかりません: {screenshot_dir}")
                 return None
             
-            screenshot_patterns = [
-                "*.png",
-                "*.jpg",
-                "*.jpeg"
-            ]
+            # 全てのファイルを取得（フィルタリングなし）
+            all_files = []
+            for item in os.listdir(screenshot_dir):
+                item_path = os.path.join(screenshot_dir, item)
+                # ディレクトリは除外、ファイルのみ
+                if os.path.isfile(item_path):
+                    all_files.append(item_path)
             
-            all_screenshots = []
-            for pattern in screenshot_patterns:
-                files = glob.glob(os.path.join(screenshot_dir, pattern))
-                all_screenshots.extend(files)
-            
-            if not all_screenshots:
-                print(f"❌ {screenshot_dir} にスクリーンショットが見つかりません")
+            if not all_files:
+                print(f"❌ {screenshot_dir} にファイルが見つかりません")
                 return None
             
             # 最新のファイルを取得（作成時間順）
-            latest_screenshot = max(all_screenshots, key=os.path.getctime)
-            print(f"📸 最新のスクリーンショット: {os.path.basename(latest_screenshot)}")
-            return latest_screenshot
+            latest_file = max(all_files, key=os.path.getctime)
+            print(f"📸 最新のファイル: {os.path.basename(latest_file)}")
+            return latest_file
             
         except Exception as e:
-            logger.error(f"Failed to get latest screenshot: {e}")
+            logger.error(f"Failed to get latest file: {e}")
             return None
     
     def read_screenshot_with_vision(self, screenshot_path: str) -> str:
