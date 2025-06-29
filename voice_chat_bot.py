@@ -86,17 +86,14 @@ class VoiceBot:
             temp_file = tempfile.NamedTemporaryFile(suffix=".wav", delete=False)
             temp_file.close()
             
-            print(f"🎤 音声録音中... ({duration}秒)")
-            print("「はい」または「終わり」と話してください")
+            print("🎤 録音中です")
             
             cmd = ['rec', temp_file.name, 'trim', '0', str(duration)]
             
             try:
                 subprocess.run(cmd, check=True, capture_output=True)
-                print("✅ 録音完了")
                 return temp_file.name
             except subprocess.CalledProcessError:
-                print("❌ 録音機能が利用できません")
                 return None
                 
         except Exception as e:
@@ -403,10 +400,10 @@ class VoiceBot:
         
         while True:
             try:
-                print("🎤 「はい」と話してください...")
-                
                 temp_file = tempfile.NamedTemporaryFile(suffix=".wav", delete=False)
                 temp_file.close()
+                
+                print("🎤 録音中です")
                 
                 cmd = ['rec', temp_file.name, 'trim', '0', '5']
                 try:
@@ -418,8 +415,6 @@ class VoiceBot:
                         os.unlink(temp_file.name)
                         
                         if text:
-                            print(f"音声認識結果: '{text}'")
-                            
                             # 「はい」系の判定
                             yes_commands = ['はい', 'hai', 'yes', 'うん', 'そうです', 'オッケー', 'ok']
                             # 終わり系の判定
