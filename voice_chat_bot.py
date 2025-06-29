@@ -603,12 +603,40 @@ class VoiceBot:
             return False
     
     def handle_post_send_screenshot(self) -> bool:
-        """送信後のスクリーンショット処理"""
+        """送信後のスクリーンショット処理（新仕様）"""
         try:
             print("\n【ステップ8】スクリーンショット処理")
             
-            # Cmd+Shift+Ctrl+5を実行
-            print("📸 スクリーンショットツールを起動中...")
+            # 音声で確認を待機
+            if self.wait_for_voice_confirmation("ChatGPTの出力が終了したら「はい」と答えてください"):
+                print("✅ 「はい」を検知 - ChatGPTウィンドウをキャプチャします")
+                
+                # アクティブウィンドウをキャプチャ
+                screenshot_path = self.capture_active_window()
+                if screenshot_path:
+                    # OCRでテキストを読み取り
+                    screenshot_text = self.read_screenshot_with_vision(screenshot_path)
+                    self.speak_text(f"スクリーンショットの内容: {screenshot_text}")
+                    return True
+                else:
+                    print("❌ ウィンドウキャプチャに失敗しました")
+                    print("🔄 フォールバック: 従来のスクリーンショット方式を使用します")
+                    
+                    # フォールバック: 従来のCmd+Shift+Ctrl+5方式
+                    return self.fallback_screenshot_method()
+            else:
+                print("❌ 音声確認がキャンセルされました")
+                return False
+            
+        except Exception as e:
+            logger.error(f"Post-send screenshot error: {e}")
+            print("❌ スクリーンショット処理中にエラーが発生しました")
+            return False
+    
+    def fallback_screenshot_method(self) -> bool:
+        """フォールバック: 従来のスクリーンショット方式"""
+        try:
+            print("📸 フォールバック: スクリーンショットツールを起動中...")
             if not self.take_screenshot_shortcut():
                 print("❌ スクリーンショット起動に失敗")
                 return False
@@ -619,9 +647,8 @@ class VoiceBot:
             user_choice = self.wait_for_enter_or_escape()
             
             if user_choice == "enter":
-                print("\n【選択1】「はい」選択 -> Enterキーを押してスクリーンショット撮影")
+                print("✅ Enterキーを押してスクリーンショット撮影")
                 
-                # 「はい」と言われたので、Enterキーを押してスクリーンショット撮影
                 if self.press_enter():
                     print("📸 スクリーンショット撮影を実行しました")
                     time.sleep(10)  # スクリーンショット保存待機
@@ -639,42 +666,12 @@ class VoiceBot:
                 else:
                     print("❌ Enterキーの送信に失敗しました")
                     return False
+            else:
+                print("❌ スクリーンショット処理がキャンセルされました")
+                return False
                 
-            elif user_choice == "escape":
-                print("\n【選択2】「いいえ」選択 -> スクリーンショット画面終了")
-                
-                # ユーザーが「いいえ」と言ってスクリーンショット画面を閉じている
-                time.sleep(1)
-                
-                # 音声監視開始
-                print("📸 再度スクリーンショットツールを起動します...")
-                if self.take_screenshot_shortcut():
-                    time.sleep(2)
-                    
-                    if self.monitor_keyboard_shortcut():
-                        time.sleep(10)  # スクリーンショット保存待機
-                        
-                        # 最新のスクリーンショットを取得
-                        screenshot_path = self.get_latest_screenshot()
-                        if screenshot_path:
-                            # スクリーンショットを読み上げ
-                            screenshot_text = self.read_screenshot_with_vision(screenshot_path)
-                            self.speak_text(f"スクリーンショットの内容: {screenshot_text}")
-                            return True
-                        else:
-                            print("❌ スクリーンショットが見つかりませんでした")
-                            return False
-                    else:
-                        print("❌ 音声監視がキャンセルされました")
-                        return False
-                else:
-                    print("❌ スクリーンショット再起動に失敗")
-                    return False
-            
-            return True
-            
         except Exception as e:
-            logger.error(f"Post-send screenshot error: {e}")
+            logger.error(f"Fallback screenshot error: {e}")
             return False
 
     def run_requirements_1_to_3(self):
@@ -729,6 +726,91 @@ class VoiceBot:
         except Exception as e:
             logger.error(f"Requirements 4-7 error: {e}")
             return False
+    
+    def capture_active_window(self) -> Optional[str]:
+        """アクティブウィンドウをキャプチャしてscreenshots.pngに保存"""
+        try:
+            screenshot_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "screenshots.png")
+            
+            print("📸 アクティブウィンドウをキャプチャ中...")
+            
+            # screencaptureコマンドでアクティブウィンドウをキャプチャ
+            # -w: ウィンドウモード（ウィンドウを選択）
+            # -o: 影を含めない
+            cmd = ['screencapture', '-w', '-o', screenshot_path]
+            
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=10)
+            
+            if result.returncode == 0:
+                if os.path.exists(screenshot_path):
+                    print(f"✅ スクリーンショット保存完了: {screenshot_path}")
+                    return screenshot_path
+                else:
+                    print("❌ スクリーンショットファイルが作成されませんでした")
+                    return None
+            else:
+                print(f"❌ screencaptureコマンドエラー: {result.stderr}")
+                return None
+                
+        except subprocess.TimeoutExpired:
+            print("❌ スクリーンショット撮影がタイムアウトしました")
+            return None
+        except Exception as e:
+            logger.error(f"Failed to capture active window: {e}")
+            return None
+    
+    def wait_for_voice_confirmation(self, message: str) -> bool:
+        """音声で「はい」の確認を待機"""
+        self.speak_text(message)
+        
+        while True:
+            try:
+                print("🎤 「はい」と話してください...")
+                
+                temp_file = tempfile.NamedTemporaryFile(suffix=".wav", delete=False)
+                temp_file.close()
+                
+                cmd = ['rec', temp_file.name, 'trim', '0', '5']
+                try:
+                    subprocess.run(cmd, check=True, capture_output=True)
+                    
+                    if self.whisper_model:
+                        segments, _ = self.whisper_model.transcribe(temp_file.name, language="ja")
+                        text = " ".join([segment.text for segment in segments])
+                        os.unlink(temp_file.name)
+                        
+                        if text:
+                            print(f"音声認識結果: '{text}'")
+                            
+                            # 「はい」系の判定
+                            yes_commands = ['はい', 'hai', 'yes', 'うん', 'そうです', 'オッケー', 'ok']
+                            # 終わり系の判定
+                            end_commands = ['終わり', 'おわり', 'オワリ', 'キャンセル', 'cancel', 'いいえ', 'no']
+                            
+                            text_lower = text.lower()
+                            
+                            if any(yes_word in text_lower for yes_word in yes_commands):
+                                print("✅ 「はい」を検知")
+                                return True
+                            elif any(end_word in text_lower for end_word in end_commands):
+                                print("❌ 終了コマンドを検知")
+                                return False
+                
+                except:
+                    # 録音失敗時はファイルを削除
+                    try:
+                        os.unlink(temp_file.name)
+                    except:
+                        pass
+                
+                time.sleep(1)
+                
+            except KeyboardInterrupt:
+                print("\n🛑 キーボード割り込みで終了")
+                return False
+            except Exception as e:
+                logger.error(f"Failed to wait for voice confirmation: {e}")
+                return False
 
 def main():
     """メイン関数"""

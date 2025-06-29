@@ -28,6 +28,9 @@ voice_chat_bot.log
 temp_*
 *.tmp
 
+# スクリーンショットファイル
+screenshots.png
+
 # 個人情報
 .env
 config.json
