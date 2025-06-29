@@ -54,6 +54,9 @@ except ImportError:
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# faster_whisperのログを非表示にする
+logging.getLogger("faster_whisper").setLevel(logging.WARNING)
+
 class VoiceBot:
     """シンプル音声ボット"""
     
