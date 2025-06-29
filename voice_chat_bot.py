@@ -598,6 +598,19 @@ class VoiceBot:
                 print("💡 debug_screenshot.pngと比較して、startVoiceBtn.pngが正しいか確認してください")
                 return False
             
+            # 各ボタンの座標を1/2に調整
+            adjusted_locations = []
+            for loc in locations:
+                adjusted_loc = type(loc)(
+                    left=int(loc.left / 2),
+                    top=int(loc.top / 2),
+                    width=int(loc.width / 2),
+                    height=int(loc.height / 2)
+                )
+                adjusted_locations.append(adjusted_loc)
+
+            locations = adjusted_locations
+            
             print(f"🔍 最終検索結果: {len(locations)}個のボタンを発見")
             for i, loc in enumerate(locations):
                 print(f"  ボタン{i+1}: left={loc.left}, top={loc.top}, width={loc.width}, height={loc.height}")
