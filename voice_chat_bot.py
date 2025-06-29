@@ -474,6 +474,7 @@ class VoiceBot:
             # イベントを送信
             CGEventPost(kCGHIDEventTap, scroll_event)
             
+
             print("✅ 画面スクロール完了")
             return True
             
@@ -524,77 +525,7 @@ class VoiceBot:
         except Exception as e:
             logger.error(f"Failed to click at position ({x}, {y}): {e}")
             return False
-    
 
-    
-
-    
-
-    
-
-    
-    def capture_right_side_screen(self) -> Optional[str]:
-        """画面右側をキャプチャ"""
-        try:
-            from Quartz import CGDisplayBounds, CGMainDisplayID
-            
-            display_bounds = CGDisplayBounds(CGMainDisplayID())
-            screen_width = int(display_bounds.size.width)
-            screen_height = int(display_bounds.size.height)
-            
-            # 画面右側の範囲を計算（右50%）
-            right_x = screen_width // 2
-            right_width = screen_width - right_x
-            
-            # スクリプトのディレクトリにright_side_screenshot.pngで保存
-            script_dir = os.path.dirname(os.path.abspath(__file__))
-            screenshot_path = os.path.join(script_dir, "right_side_screenshot.png")
-            
-            print(f"📸 画面右側をキャプチャ中... (範囲: {right_x}, 0, {right_width}, {screen_height})")
-            
-            # screencaptureで画面右側のみをキャプチャ
-            cmd = [
-                'screencapture', 
-                '-x',  # 音なし
-                '-R', f"{right_x},0,{right_width},{screen_height}",  # 範囲指定
-                screenshot_path
-            ]
-            
-            result = subprocess.run(cmd, capture_output=True, text=True, timeout=10)
-            
-            if result.returncode == 0 and os.path.exists(screenshot_path):
-                print(f"✅ 画面右側キャプチャ完了: {screenshot_path}")
-                return screenshot_path
-            else:
-                print(f"❌ 画面右側キャプチャ失敗: {result.stderr}")
-                return None
-                
-        except Exception as e:
-            logger.error(f"Failed to capture right side screen: {e}")
-            return None
-    
-
-    
-    def click_fallback_position(self) -> bool:
-        """フォールバック: 推定位置をクリック"""
-        try:
-            from Quartz import CGDisplayBounds, CGMainDisplayID
-            
-            display_bounds = CGDisplayBounds(CGMainDisplayID())
-            screen_width = int(display_bounds.size.width)
-            screen_height = int(display_bounds.size.height)
-            
-            # 画面右側の適当な位置をクリック（画面幅の70%, 高さの40%）
-            click_x = int(screen_width * 0.7)
-            click_y = int(screen_height * 0.4)
-            
-            print(f"💡 フォールバック: 推定位置 ({click_x}, {click_y}) をクリックします")
-            return self.click_at_position(click_x, click_y)
-            
-        except Exception as e:
-            logger.error(f"Failed to click fallback position: {e}")
-            return False
-    
     def find_and_click_image_simple(self, button_image: str = "startVoiceBtn.png") -> bool:
         """PyAutoGUIを使用したシンプルな画像検索・クリック（複数ボタン対応・座標補正廃止）"""
         try:
@@ -660,8 +591,6 @@ class VoiceBot:
             logger.error(f"Failed to find and click image with PyAutoGUI: {e}")
             return False
 
-    # ...existing code...
-    
 def main():
     """メイン関数"""
     print("VoiceChatBot for macOS")
