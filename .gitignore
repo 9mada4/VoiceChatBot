@@ -32,7 +32,7 @@ temp_*
 *.png
 *.jpg
 *.jpeg
-screenshot.png
+!startVoiceBtn.png
 
 # 個人情報
 .env
