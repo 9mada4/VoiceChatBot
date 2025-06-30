@@ -119,41 +119,7 @@ class VoiceBot:
             logger.error(f"Transcription failed: {e}")
             return None
     
-    def get_voice_response(self, duration: int = 4) -> bool:
-        """音声入力②で「はい」「いいえ」を取得"""
-        audio_file = self.record_audio_macos(duration)
-        if not audio_file:
-            return False
-        
-        text = self.transcribe_audio(audio_file)
-        if not text:
-            print("❌ 音声認識に失敗しました")
-            return False
-        
-        print(f"音声認識結果: '{text}'")
-        
-        # 「はい」系の判定
-        yes_commands = ['はい', 'hai', 'yes', 'うん', 'そうです', 'オッケー', 'ok']
-        
-        # 終了コマンドの検出（ひらがな・漢字・カタカナ対応）
-        end_commands = [
-            '終わり', 'おわり', 'オワリ', 'OWARI', 'おわりー', 'オワリー',
-            'しゅうりょう', 'シュウリョウ', 'SHUURYOU', 'しゅーりょー', 'シューリョー',
-            'end', 'finish', 'stop', 'やめ', 'ヤメ',
-            'キャンセル', 'cancel', 'ストップ', '中止', 'ちゅうし', 'チュウシ'
-        ]
-        
-        text_lower = text.lower()
-        
-        # 終了判定を優先
-        if any(end_word in text_lower for end_word in end_commands):
-            print(f"判定結果: 終わり")
-            return False
-        
-        result = any(yes_word in text_lower for yes_word in yes_commands)
-        print(f"判定結果: {'はい' if result else '終わり'}")
-        
-        return result
+
     
     def press_key_quartz(self, keycode: int) -> bool:
         """Quartzでキーを送信"""
@@ -248,34 +214,7 @@ class VoiceBot:
         
         print("🛑 バックグラウンド音声監視を終了")
     
-    def press_enter(self) -> bool:
-        """Enterキーを押す（sample.py参考）"""
-        if not QUARTZ_AVAILABLE:
-            print("💡 手動でEnterキーを押してください")
-            return False
-        
-        try:
-            ENTER_KEY = 36  # Return / Enter（メインキー）
-            
-            # keyDown
-            CGEventPost(
-                kCGHIDEventTap,
-                CGEventCreateKeyboardEvent(None, ENTER_KEY, True)
-            )
-            time.sleep(0.05)  # 押しっぱなし時間
-            
-            # keyUp
-            CGEventPost(
-                kCGHIDEventTap,
-                CGEventCreateKeyboardEvent(None, ENTER_KEY, False)
-            )
-            
-            print("✅ Enterキーを送信しました")
-            return True
-            
-        except Exception as e:
-            logger.error(f"Failed to press enter: {e}")
-            return False
+
     
     def send_with_cmd_enter(self) -> bool:
         """要件7: Cmd+Enterで送信"""
@@ -475,49 +414,7 @@ class VoiceBot:
             logger.error(f"Failed to scroll screen: {e}")
             return False
     
-    def click_at_position(self, x: int, y: int) -> bool:
-        """指定した座標をクリック"""
-        if not QUARTZ_AVAILABLE:
-            print(f"💡 手動で座標 ({x}, {y}) をクリックしてください")
-            return False
-        
-        try:
-            from Quartz.CoreGraphics import (
-                CGEventCreateMouseEvent, CGEventPost, 
-                kCGEventLeftMouseDown, kCGEventLeftMouseUp,
-                kCGMouseButtonLeft
-            )
-            from Foundation import NSPoint
-            
-            print(f"🖱️ 座標 ({x}, {y}) をクリック中...")
-            
-            # マウスダウンイベント
-            mouse_down = CGEventCreateMouseEvent(
-                None,
-                kCGEventLeftMouseDown,
-                NSPoint(x, y),
-                kCGMouseButtonLeft
-            )
-            
-            # マウスアップイベント
-            mouse_up = CGEventCreateMouseEvent(
-                None,
-                kCGEventLeftMouseUp,
-                NSPoint(x, y),
-                kCGMouseButtonLeft
-            )
-            
-            # クリック実行
-            CGEventPost(kCGHIDEventTap, mouse_down)
-            time.sleep(0.1)  # 短い間隔
-            CGEventPost(kCGHIDEventTap, mouse_up)
-            
-            print(f"✅ 座標 ({x}, {y}) のクリック完了")
-            return True
-            
-        except Exception as e:
-            logger.error(f"Failed to click at position ({x}, {y}): {e}")
-            return False
+
 
     def find_and_click_image_simple(self, button_image: str = "startVoiceBtn.png") -> bool:
         """PyAutoGUIを使用したシンプルな画像検索・クリック（複数ボタン対応・座標補正廃止）"""
